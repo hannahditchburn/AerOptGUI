@@ -348,7 +348,7 @@ bool Optimisation::refreshFromCluster() {
     std::string dir = simulationDirectoryName().toStdString();
     folderFromCluster("AerOpt/"+dir, "AerOptFiles/"+dir, address, username, password);
     readFitness();
-    if(mOptimisationModel != 0) {
+    if(mOptimisationModel != nullptr) {
         mOptimisationModel->emitOptimisationFitnessChanged(this);
     }
 }

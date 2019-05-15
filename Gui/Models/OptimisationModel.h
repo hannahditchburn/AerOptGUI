@@ -21,8 +21,8 @@ public:
         Object = Qt::UserRole + 1
     };
 
-    OptimisationModel(QObject* parent = 0);
 
+    OptimisationModel(QObject* parent = nullptr);
     QModelIndex addOptimisation(Optimisation *optimisation);
 
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
