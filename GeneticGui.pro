@@ -137,13 +137,13 @@ RESOURCES += \
 
 
 
-PRE_TARGETDEPS += $$PWD/../vcpkg/packages/libssh_x64-windows/lib/ssh.lib
-LIBS += -L$$PWD/../vcpkg/packages/libssh_x64-windows/lib/ -lssh
-INCLUDEPATH += $$PWD/../vcpkg/packages/libssh_x64-windows/include
-DEPENDPATH += $$PWD/../vcpkg/packages/libssh_x64-windows/include
+PRE_TARGETDEPS += C:\vcpkg\packages\libssh_x64-windows\lib\ssh.lib
+LIBS += -LC:\vcpkg\packages\libssh_x64-windows\lib\ -lssh
+INCLUDEPATH += C:\vcpkg\packages\libssh_x64-windows\include
+DEPENDPATH += C:\vcpkg\packages\libssh_x64-windows\include
 
-LIBS += -L$$PWD/../vcpkg/packages/openssl-windows_x64-windows/lib/ -llibeay32 -lssleay32
-INCLUDEPATH += $$PWD/../vcpkg/packages/openssl-windows_x64-windows/include
-DEPENDPATH += $$PWD/../vcpkg/packages/openssl-windows_x64-windows/include
+LIBS += -LC:\vcpkg\packages\openssl-windows_x64-windows\lib\ -llibeay32 -lssleay32
+INCLUDEPATH += C:\vcpkg\packages\openssl-windows_x64-windows\include
+DEPENDPATH += C:\vcpkg\packages\openssl-windows_x64-windows\include
 
 
