@@ -20,7 +20,7 @@
 class OptimisationModel;
 
 /**
- * @brief The OptimisationRun class
+ * @brief The Optimisation class
  * This class stores project data
  */
 class Optimisation
@@ -224,34 +224,90 @@ private:
     QString aerOptNodeFileCopyPath();
     QString aerOptInputFileCopyPath();
 
+    /**
+     * @brief mLabel Label for referring to this optimisation. It is used in naming.
+     */
     QString mLabel = "";
 
 	//Objective function attributes
+    /**
+     * @brief mObjFunc Optimisation Algorithm e.g. Modified Cuckoo Search
+     */
     Enum::ObjFunc mObjFunc;
 
 	//Boundary condition attributes
+    /**
+     * @brief mMachNo Mach Number
+     */
 	float mMachNo;
+
+    /**
+     * @brief mReNo Reynolds Number
+     */
 	float mReNo;
+
+    /**
+     * @brief mFreeAlpha Angle of attack
+     */
 	float mFreeAlpha;
+
+    /**
+     * @brief mFreePress Pressure Absolute
+     */
 	float mFreePress;
+
+    /**
+     * @brief mFreeTemp Temperature Absolute
+     */
 	float mFreeTemp;
 
 	//Optimiser parameters
+    /**
+     * @brief mOptimisationMethod Optimisation Algorithm.
+     */
     Enum::OptMethod mOptimisationMethod;
+
+    /**
+     * @brief mNoAgents Number of agents to use in optimisation algorithm.
+     */
 	int mNoAgents;
+
+    /**
+     * @brief mNoGens Number of generations to run optimisation algorithm for.
+     */
 	int mNoGens;
+
+    /**
+     * @brief mNoTop Number of fit agents to carry over to the next generation.
+     */
     int mNoTop;
 
     Mesh* mInitMesh;
+    /**
+     * @brief mControlPoints List of optimisation boundary points that are also control points for optimisation.
+     */
     std::vector<BoundaryPoint*> mControlPoints;
+
+    /**
+     * @brief mFitness Fitness values for each agent.
+     */
     std::vector<std::vector<double>> mFitness;
 
     ProcessManager* mProcess = nullptr;
 
+    /**
+     * @brief mOptimisationModel Model that this optimisation is loaded in.
+     */
     OptimisationModel* mOptimisationModel;
 
+    /**
+     * @brief mOutputLog Log of all optimisation messages.
+     */
     QString mOutputLog = "";
 
+    /**
+     * @brief mProfilePoints List of points for loaded profile to optimise.
+     */
     ProfilePoints mProfilePoints;
 
     clusterManager* clusterChecker = nullptr;
