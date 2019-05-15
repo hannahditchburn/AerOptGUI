@@ -16,50 +16,60 @@ clusterManager::~clusterManager()
 
 
 void clusterManager::setWorkingDirectory(QString workDirQString){
-    workingDirectory = workDirQString.toStdString();
+    mWorkingDirectory = workDirQString.toStdString();
 }
 
 void clusterManager::setClusterAddress(QString addressQString){
-    address = addressQString.toStdString();
+    mAddress = addressQString.toStdString();
 }
 
 void clusterManager::setUsername(QString usernameQString){
-    username = usernameQString.toStdString();
+    mUsername = usernameQString.toStdString();
 }
 
 void clusterManager::setPassword(QString passwordQString){
-    password = passwordQString.toStdString();
+    mPassword = passwordQString.toStdString();
 }
 
 
 int clusterManager::submitToCluster(){
+    /* Submit a run to the cluster. Copies necessary input files over, creates a full
+     * copy of the AerOpt folder on the cluster (currently just assuming its at ~/AerOpt)
+     * and starts AerOpt in a screen. */
     QSettings settings;
-    ssh_session session = createSSHSession( address, username, password );
+
+    ssh_session session = createSSHSession( mAddress, mUsername, mPassword );
 
     std::string AerOptInFile = settings.value("AerOpt/inputFile").toString().toStdString();
     std::string AerOptNodeFile =  settings.value("AerOpt/nodeFile").toString().toStdString();
     std::string meshDatFile = settings.value("mesher/initMeshFile").toString().toStdString();
 
-    std::string rundir = "AerOpt/"+workingDirectory;
-    std::string directory = workingDirectory;
-    std::string outputDirectory = directory+"/Output_Data";
+    std::string clusterdir = "AerOpt/"+mWorkingDirectory;
+    std::string outputDirectory = mWorkingDirectory+"/Output_Data";
     std::string outputfilename = outputDirectory+"/output.log";
-    sshExecute(session, "rm -r "+rundir);
-    sshExecute(session, "mkdir -p "+rundir+"/"+outputDirectory);
 
-    sshExecute(session, "mkdir -p "+rundir+"/Input_Data/");
-    fileToCluster(AerOptInFile.c_str(),rundir+"/Input_Data/AerOpt_InputParameters.txt", session);
-    fileToCluster(AerOptNodeFile.c_str(),rundir+"/Input_Data/Control_Nodes.txt", session);
-    fileToCluster(meshDatFile.c_str(),rundir+"/Input_Data/Mesh.dat", session);
+    // Delete any conflicting directory and create the new one
+    sshExecute(session, "rm -r "+clusterdir);
+    sshExecute(session, "mkdir -p "+clusterdir+"/"+outputDirectory);
+    sshExecute(session, "mkdir -p "+clusterdir+"/Input_Data/");
 
-    sshExecute(session, "cd "+rundir+"; cp Input_Data/AerOpt_InputParameters.txt "+directory);
-    sshExecute(session, "cd "+rundir+"; cp ../AerOpt ./");
-    sshExecute(session, "cd "+rundir+"; cp -r ../Executables ../executables ./");
+    // Copy input files to the cluster
+    fileToCluster(AerOptInFile.c_str(),clusterdir+"/Input_Data/AerOpt_InputParameters.txt", session);
+    fileToCluster(AerOptNodeFile.c_str(),clusterdir+"/Input_Data/Control_Nodes.txt", session);
+    fileToCluster(meshDatFile.c_str(),clusterdir+"/Input_Data/Mesh.dat", session);
 
-    sshExecute(session, "cd "+rundir+"; echo module load mkl > run.sh");
-    sshExecute(session, "cd "+rundir+"; echo './AerOpt 2>&1 > "+outputfilename+"' >> run.sh");
-    sshExecute(session, "cd "+rundir+"; chmod +x run.sh");
-    sshExecute(session, "cd "+rundir+"; screen -L -d -m ./run.sh ");
+    // Copy the input file also to the output directory
+    sshExecute(session, "cd "+clusterdir+"; cp Input_Data/AerOpt_InputParameters.txt "+mWorkingDirectory);
+
+    // Copy the AerOpt executable and other necessary binaries
+    sshExecute(session, "cd "+clusterdir+"; cp ../AerOpt ./");
+    sshExecute(session, "cd "+clusterdir+"; cp -r ../Executables ../executables ./");
+
+    // Create a run script and start it in screen
+    sshExecute(session, "cd "+clusterdir+"; echo module load mkl > run.sh");
+    sshExecute(session, "cd "+clusterdir+"; echo './AerOpt 2>&1 > "+outputfilename+"' >> run.sh");
+    sshExecute(session, "cd "+clusterdir+"; chmod +x run.sh");
+    sshExecute(session, "cd "+clusterdir+"; screen -L -d -m ./run.sh ");
 
     ssh_disconnect(session);
     ssh_free(session);
@@ -69,26 +79,41 @@ int clusterManager::submitToCluster(){
 
 
 void clusterManager::folderCheckLoop(){
+    /* Copy the folder back from the cluster and check for changes in a loop.
+     * This essentially replaces folderChecker for local runs. */
+    QSettings settings;
+
+    std::string localdirpath = settings.value("AerOpt/workingDirectory").toString().toStdString();
     std::string outputFilename;
-    std::string localFilename;
+    std::string fitnessFilename;
     std::string localFolder;
     int line_number=0;
 
+    // Build local filenames
+    std::string clusterdir = "AerOpt/" + mWorkingDirectory+"/";
+    outputFilename = mWorkingDirectory + "/Output_Data/output.log";
+    QString filePath = QString((localdirpath+outputFilename).c_str());
+    QDir::toNativeSeparators(filePath);
+    outputFilename = filePath.toStdString();
+
+    filePath = QString((localdirpath+mWorkingDirectory).c_str());
+    QDir::toNativeSeparators(filePath);
+    localFolder = filePath.toStdString();
+
+    fitnessFilename = mWorkingDirectory + "/FitnessAll.txt";
+    filePath = QString((localdirpath+fitnessFilename ).c_str());
+    QDir::toNativeSeparators(filePath);
+    fitnessFilename = filePath.toStdString();
+
+    // The loop
     while ( 1 ) {
 
-        std::string rundir = "AerOpt/" + workingDirectory+"/";
-        outputFilename = workingDirectory + "/Output_Data/output.log";
-        QString filePath = QString(("AerOptFiles/"+outputFilename).c_str());
-        QDir::toNativeSeparators(filePath);
-        localFilename = filePath.toStdString();
+        // Copy the folder over. This will only copy files if the time stamp or
+        // file size have changed
+        folderFromCluster(clusterdir+mWorkingDirectory, localdirpath+mWorkingDirectory);
 
-        filePath = QString(("AerOptFiles/"+workingDirectory).c_str());
-        QDir::toNativeSeparators(filePath);
-        localFolder = filePath.toStdString();
-
-        folderFromCluster(rundir+workingDirectory, "AerOptFiles/"+workingDirectory, address, username, password);
-
-        std::ifstream outputfile(localFilename);
+        // Check for new lines in the outputfile and send them to the Optimisation
+        std::ifstream outputfile(outputFilename);
         std::string line = "";
         std::string output = "";
 
@@ -110,12 +135,9 @@ void clusterManager::folderCheckLoop(){
             outputfile.close();
         }
 
-        /* Check for new lines in the fitness file */
-        filePath = QString(("AerOptFiles/"+workingDirectory + "/FitnessAll.txt").c_str());
-        QDir::toNativeSeparators(filePath);
-        localFilename = filePath.toStdString();
 
-        std::ifstream fitness_file(localFilename);
+        // Check for new lines in the fitness file and update plot if they are found
+        std::ifstream fitness_file(fitnessFilename);
 
         if ( fitness_file.is_open() ){
             int lines = 0;
@@ -143,6 +165,7 @@ void clusterManager::folderCheckLoop(){
 
 
 void clusterManager::run(){
+    // This will be run when the Qthread is started. Submit and start checking the folder
     if( submitToCluster()==0 ){
         folderCheckLoop();
     }
@@ -151,6 +174,8 @@ void clusterManager::run(){
 
 
 ssh_session createSSHSession( std::string address, std::string username, std::string password ){
+    /* Create a new ssh session and log in. */
+
     ssh_session session = ssh_new();
     int rc;
     if (session == NULL) {
@@ -174,6 +199,8 @@ ssh_session createSSHSession( std::string address, std::string username, std::st
 }
 
 ssh_channel createSSHChannel(ssh_session session){
+    /* Create an ssh channel for executing a command */
+
     ssh_channel channel;
     int rc;
 
@@ -196,6 +223,7 @@ ssh_channel createSSHChannel(ssh_session session){
 }
 
 void sshExecute(ssh_session session, std::string command){
+    /* Execute a command over ssh */
     int rc;
     ssh_channel channel = createSSHChannel(session);
 
@@ -215,6 +243,8 @@ void sshExecute(ssh_session session, std::string command){
 
 
 sftp_session createSFTPSession(ssh_session session){
+    /* Create an SFTP session for accessing files */
+
     sftp_session sftp;
     int rc;
 
@@ -240,6 +270,8 @@ sftp_session createSFTPSession(ssh_session session){
 
 
 int fileToCluster(std::string source, std::string destination, ssh_session session){
+    /* Stream the contents of a file to a file in the cluster over sftp */
+
     int rc;
     sftp_session sftp;
     sftp_file file;
@@ -293,6 +325,8 @@ int fileToCluster(std::string source, std::string destination, ssh_session sessi
 
 
 int getClusterFile(std::string source, std::string destination, ssh_session session, sftp_session sftp){
+    /* Stream the contents of a file in the cluster to a file over sftp */
+
     int rc;
     sftp_file file;
     char buffer[16384];
@@ -357,6 +391,8 @@ int getClusterFile(std::string source, std::string destination, ssh_session sess
 
 
 int downloadAndVerifyClusterFile(std::string source, std::string destination, int size, ssh_session session, sftp_session sftp){
+    /* Check if a file has matches what should have been downloaded and retry if it doesn't.
+     * If everything fails, delete the file */
     struct stat stat_buf;
     int rc = getClusterFile(source, destination, session, sftp);
     rc &= stat(destination.c_str(), &stat_buf);
@@ -376,6 +412,8 @@ int downloadAndVerifyClusterFile(std::string source, std::string destination, in
 
 
 int getClusterFolder(std::string source, std::string destination, ssh_session session, sftp_session sftp){
+    /* Copy a folder from the cluster recursively, copying only files that have changed. */
+
     static std::map<std::string, uint64_t> __cluster_file_size_map;
     static std::map<std::string, uint64_t> __cluster_file_time_map;
     sftp_dir directory;
@@ -402,7 +440,6 @@ int getClusterFolder(std::string source, std::string destination, ssh_session se
                 uint64_t old_time = __cluster_file_time_map[subdestination];
                 uint64_t old_size = __cluster_file_size_map[subdestination];
 
-                std::cout << subdestination << " " << old_size << " " << file_attr->size << std::endl;
 
                 if( old_size != file_attr->size || old_time != file_attr->mtime ){
                     int rc = downloadAndVerifyClusterFile(subsource, subdestination, file_attr->size, session, sftp);
@@ -424,10 +461,12 @@ int getClusterFolder(std::string source, std::string destination, ssh_session se
 
 
 
-int folderFromCluster(std::string source, std::string destination, std::string address, std::string username, std::string password){
+int clusterManager::folderFromCluster(std::string source, std::string destination){
+    /* Copy a folder from the cluster using the address, username and password
+     * provided by the clusterManager */
     sftp_session sftp;
 
-    ssh_session session = createSSHSession(address, username, password);
+    ssh_session session = createSSHSession(mAddress, mUsername, mPassword);
     sftp = createSFTPSession(session);
 
     getClusterFolder( source, destination, session, sftp);
@@ -438,10 +477,12 @@ int folderFromCluster(std::string source, std::string destination, std::string a
     return 0;
 }
 
-int fileFromCluster(std::string source, std::string destination, std::string address, std::string username, std::string password){
+int clusterManager::fileFromCluster(std::string source, std::string destination){
+    /* Copy a file from the cluster using the address, username and password
+     * provided by the clusterManager */
     sftp_session sftp;
 
-    ssh_session session = createSSHSession(address, username, password);
+    ssh_session session = createSSHSession(mAddress, mUsername, mPassword);
     sftp = createSFTPSession(session);
 
     QString filePath = QDir::toNativeSeparators(destination.c_str());
@@ -455,6 +496,7 @@ int fileFromCluster(std::string source, std::string destination, std::string add
 }
 
 int sshVerifyPassword( QString address, QString username, QString password ){
+    /* Check the cluster password by attempting to log in. */
     ssh_session session = ssh_new();
     int rc;
     if (session == NULL) {
@@ -481,12 +523,3 @@ int sshVerifyPassword( QString address, QString username, QString password ){
     return 0;
 }
 
-
-int fileExists(std::string filename){
-    FILE *file;
-    if( (file = fopen(filename.c_str(), "r")) ){
-        fclose(file);
-        return 1;
-    }
-    return 0;
-}

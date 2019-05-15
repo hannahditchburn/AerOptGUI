@@ -35,23 +35,24 @@ signals:
 
 private:
 
-    std::string workingDirectory = "";
-    std::string address = "";
-    std::string username = "";
-    std::string password = "";
+    std::string mWorkingDirectory = "";
+    std::string mAddress = "";
+    std::string mUsername = "";
+    std::string mPassword = "";
 
     void run();
     void folderCheckLoop();
     int submitToCluster();
 
+    int folderFromCluster(std::string source, std::string destination);
+    int fileFromCluster(std::string source, std::string destination);
+
 };
 
 
-int sshVerifyPassword( QString address, QString username, QString password );
-int fileExists(std::string filename);
-int folderFromCluster(std::string source, std::string destination, std::string address, std::string username, std::string password);
-int fileFromCluster(std::string source, std::string destination, std::string address, std::string username, std::string password);
 ssh_session createSSHSession( std::string address, std::string username, std::string password );
+int sshVerifyPassword( QString address, QString username, QString password );
+
 void sshExecute(ssh_session session, std::string command);
 int fileToCluster(std::string source, std::string destination, ssh_session session);
 
