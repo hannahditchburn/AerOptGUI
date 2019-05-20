@@ -2,12 +2,15 @@
 #define ZOOMPANVIEW_H
 
 #include <QGraphicsView>
-#include <QTouchEvent>
+#include <QtGui>
+
+class QGestureEvent;
+class QPinchGesture;
 
 class ZoomPanView : public QGraphicsView
 {
     public:
-        ZoomPanView(QWidget* parent = 0);
+        ZoomPanView(QWidget* parent = nullptr);
 
         /**
          * @brief ZoomPanView::wheelEvent Zoom in or out depending on direction of mouse scroll
@@ -16,16 +19,12 @@ class ZoomPanView : public QGraphicsView
         void wheelEvent(QWheelEvent* event);
 
         /**
-         * @brief touchEvent Pinch-to-Zoom action.
-         * @param touchEvent Touch screen event
-         */
-        void touchEvent(QTouchEvent* touchEvent);
-
-        /**
          * @brief ZOOM_SCALE_FACTOR
          * Factor by which to rescale view
          */
         const double ZOOM_SCALE_FACTOR = 1.15;
+
+        void grabGestures();
 
     private:
 
@@ -35,6 +34,14 @@ class ZoomPanView : public QGraphicsView
          */
         void zoom(double scaleFactor);
 
+        bool gestureEvent(QGestureEvent *event);
+        void pinchTriggered(QPinchGesture*);
+
+        double pinchScaleFactor = 1;
+
+    protected:
+
+        bool event(QEvent *event) override;
 };
 
 #endif // ZOOMPANVIEW_H
