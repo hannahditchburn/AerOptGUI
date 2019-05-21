@@ -24,9 +24,6 @@ public slots:
     void meshChanged();
     void boundaryPointsReset();
 
-signals:
-    void pointActivated(int);
-
 private:
     void calcBoundingBox();
     uint getBrushSize();
