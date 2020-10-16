@@ -20,7 +20,7 @@ CONFIG(debug, debug|release) {
     win32:QMAKE_LFLAGS += -static
     win32:QMAKE_LFLAGS += -static-libgcc
 } else {
-    DESTDIR = ../
+    DESTDIR = release
     OBJECTS_DIR = build/release-gcc/obj
     MOC_DIR = build/release-gcc/moc
     RCC_DIR = build/release-gcc/rcc
@@ -134,11 +134,16 @@ INCLUDEPATH += \
 
 RESOURCES += \
     Resourses.qrc
-	
-LIBS += -L/opt/libssh/build/src -lssh
-INCLUDEPATH += /opt/libssh/include/
+
+#PRE_TARGETDEPS += /AerOptGUI/vcpkg/packages/libssh_x64-windows-static/lib/ssh.lib	
+LIBS += -L/opt/mxe/usr/x86_64-w64-mingw32.shared/lib -lssh
+#LIBS +=-L/AerOptGUI/vcpkg/packages/libssh_x64-windows-shared/lib -lssh
+INCLUDEPATH += /opt/mxe/usr/x86_64-w64-mingw32.shared/include
+#INCLUDEPATH += /AerOptGUI/vcpkg/packages/libssh_x64-windows-static/include/
+#DEPENDPATH += /AerOptGUI/vcpkg/packages/libssh_x64-windows-static/include/
 
 LIBS += -L/opt/mxe/usr/x86_64-w64-mingw32.static/lib -llibcrypto  -llibssl
 INCLUDEPATH += /opt/mxe/usr/x86_64-w64-mingw32.static/include/openssl
-
+#LIBS += -L/opt/mxe/usr/x86_64-w64-mingw32.static/lib -llibcrypto  -llibssl
+#INCLUDEPATH += /AerOptGUI/vcpkg/packages/libssh_x64-windows/include/
 
