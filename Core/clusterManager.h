@@ -11,7 +11,6 @@
 
 #define SSH_NO_CPP_EXCEPTIONS
 #define LIBSSH_STATIC 1
-#include <libssh/libssh.h>
 #include <libssh/libsshpp.hpp>
 #include <libssh/sftp.h>
 #include <sys/stat.h>
