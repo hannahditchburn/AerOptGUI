@@ -190,8 +190,8 @@ ssh_session createSSHSession( std::string address, std::string username, std::st
     rc &= ssh_userauth_password(session, NULL, password.c_str());
     if (rc != SSH_OK)
     {
-      fprintf(stderr, "Error connecting to localhost: %s\n",
-              ssh_get_error(session));
+      fprintf(stderr, "Error connecting to localhost: %s\n");
+    //          ssh_get_error(session));
       exit(-1);
     }
 
