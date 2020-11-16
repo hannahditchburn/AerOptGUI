@@ -62,7 +62,7 @@ compile a of lot diferent of tools (fortunatley it is only required to be run on
 Once this is complete we now have a docker image we can use to create a container with the following command.
 
 ```
-docker run -it -v "${pwd}":/AerOptGUI --name QT-build qt/mxe:win64
+docker run -it -v ${pwd}:/AerOptGUI --name QT-build qt/mxe:win64
 ```
 
 This command should place us on a command prompt inside the container we just created. You can tell because the prompt should say:
