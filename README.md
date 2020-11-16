@@ -1,47 +1,56 @@
 # The AerOpt GUI
 
 ## Compiling statically with Docker
-If you are compiling on windows the recommended way of compiling the AerOpt GUI is using the included docker 
-image "Dockerfile.mxe". This has been setup to create a single executable with all the QT libraires built
-into it. Docker is a tool to run lightweight virtual machines to perform specific tasks. In our case this
-has been configured to run a minimal install of ubuntu linux which has been setup with a static build of QT
-and the tools nessacary to crosscompile AerOpt GUI for windows. 
+If you are compiling on windows the new recommended way of compiling the AerOpt GUI is to use Docker to create a Docker
+container based of the included DockerFile "DockerFile.mxe". This has been setup to create a single
+executable with all the QT libraires built into it. Docker is a tool to run lightweight virtual machines
+(docker call these containers) to perform specific tasks. In our case this has been configured to run a minimal
+install of ubuntu linux which has been setup with a static build of QT and the tools nessacary to crosscompile AerOpt GUI for windows. 
 
-This may seem quite a roundabout way of achiving this since is it is possible to build QT staically for windows.
-However, this process is far from easy as it fraught with errors and is as such not recomended. If you don't wish 
-to (or can't) use Docker you can follow the instructions under **Compiling in QT Creator** to compile a dynamically 
-linked executable with QT creator. You will then however, need to perform some extra steps to distribute the executable.
-see **Deploying** for details.
+This may seem quite a roundabout way of achiving this, since is it is possible to build QT staically for windows.
+However, this process is far from easy as it fraught with errors. The interested reader can a find decent set of
+instructions [here](https://tadeubento.com/2020/qt-static-builds-under-windows/). However, I will warn you now
+this is not for the faint hearted.
+
+If you don't wish to (or can't) use Docker you can follow the instructions under **Compiling in QT Creator**
+to compile a dynamically linked executable with QT creator. You will then however, need to perform some extra
+steps to distribute the executable. See **Deploying** for details.
 
 ### Setup
-First you will need to install [git](https://gitforwindows.org/), if you don't already have it.
-Go to the [git for Windows home page](https://gitforwindows.org/) and click download.
+
+First you will need to install git, if you don't already have it. Go to the [git for Windows home page]
+(https://gitforwindows.org/) and click download.
 
 Next download docker desktop for [windows](https://www.docker.com/get-started) and install it with the default settings.
 
-Windows will ask you to reboot after which docker will automatcally start runnng once you log back in (if you don't want 
+Windows will ask you to reboot after which docker will automatcally start running once you log back in. If you don't want 
 this behaviour you can change this in the settings however, you need to remember to start docker whenever you want to re-compile
-the code). 
+the code. 
 
-At this point docker may throw an error about windows sub system for linux (WSL2) support. If this occurs you need to 
+Note: docker may throw an error saying WSL2 Instaltion is incomplete. If this occurs you need to 
 download the WSL2 kernal from [here](https://docs.microsoft.com/en-gb/windows/wsl/wsl2-kernel) and install it.
 
-At this point there is a tutorial which can go through if you wish (or you can press the skip button in the bottom left corner) 
+At this point there is a tutorial, which you can go through if you wish (or you can press the skip button in the bottom left corner) 
 after which you can close docker.
 
-Next, download the AerOpt GUI repo. Since you have git you should have a program called `Git Bash` which you can use it to clone 
-the project. Run `Git Bash` to open the command line interface.
+Next, we need to download the AerOpt GUI repo. Since you have git we can use microsoft powershell to clone the project.
+Open the start menu and search for `Powershell` this will open a blue textbox with white writing, This is called a comand prompt.
  
 If you are familiar with it, use `cd` to navigate to where you want to download the repo. If not, you probably want to place it 
-in your home folder (generally this is 'C:\Users\USERNAME'), which is where you start.
+in your home folder (generally this is 'C:\Users\YOUR_USERNAME'), which is where you start.
 
-Copy the following commands in to the command line and press Enter
+Copy the following commands in to the command prompt and press Enter
 ```
+### CHANGE ME ####
 git clone https://github.com/DrBenEvans/AerOptGUI.git
 cd AerOptGUI
 ```
 
-The final setup setup step is to build the docker container with the following command. 
+The next step is to build the docker image. We can think of this as a template (created using the commands defined by Dockerfile.mxe)
+that will be used to create a linux virtual machine (docker calls this a container).
+
+The image is setup to create a basic linux instalation along with QT and and all the tools we need to compile the code.
+We can create the image with with the following command. 
 ```
 docker build -f Dockerfile.mxe -t qt/mxe:win64 .
 ```
@@ -50,15 +59,17 @@ Warning this command can take several hours to complete depending on your comput
 compile a of lot diferent of tools (fortunatley it is only required to be run once). 
 
 ### Compiling the code
-Once the setup is complete we can enter the docker container with the following command.   
+Once this is complete we now have a docker image we can use to create a contaner with the following command.
+
 ```
-winpty docker run -it -v "$(pwd)":/AerOptGUI qt/mxe:win64
+docker run -it -v "${pwd}":/AerOptGUI --name QT-build qt/mxe:win64
 ```
 
-Note if you previously closed `Git Bash` will need to use `cd` to move into the git repo. If you downloaded it in your home folder 
-just run `cd AerOptGUI` if you downloaded it elsewhere you will need to go there.
+This command should place us on a command prompt inside the container we just created. You can tell because the prompt should say:
+"root@xyz123/:#" where xyz123 will be a series of random letters and numbers.
 
-Once inside the container we need to run the following to compile the code:
+From here we simply need to run the following to compile the code.
+
 ```
 	cd /AerOptGUI/
 	qmake GeneticGui-docker.pro
@@ -68,13 +79,21 @@ Once inside the container we need to run the following to compile the code:
 Once finished we can stop the container with the command 
 ```
 	exit
+
+```
+You should now have a static executable AerOptGUI.exe in the release directory. At this pont If you ever need to re-compile
+the code you can simply run the following in powershell to restart the container.
+```
+docker start -i QT-build
 ```
 
-If you need to re-compile the code you can simply re-run the container (you shouldn't need to re-build it).
-If you want to permently delete the container simply run the following in `Git Bash`:
+If you want to permently delete the container simply run the following in Powershell:
 ```
 docker rm -f qt/mxe:win64
 ```
+At this point you have everything you need. What follows are the old instructions to compile dynamically with QT creator
+should you wish to use it.
+
 ## Compiling in QT Creator
 
 ### Install Compilation Requirements
