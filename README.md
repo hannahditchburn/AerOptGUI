@@ -72,6 +72,11 @@ From here we simply need to run the following to compile the code.
 
 ```
 	cd /AerOptGUI/
+	unzip docker_libssh.zip
+	cd docker_libssh
+	cp libssh.a /opt/mxe/usr/x86_64-w64-mingw32.static/lib/libssh.a
+	cp -r libssh /opt/mxe/usr/x86_64-w64-mingw32.static/include/libssh
+	cd ..
 	qmake GeneticGui-docker.pro
 	make
 ```
@@ -85,11 +90,30 @@ the code you can simply run the following in powershell to restart the container
 ```
 docker start -i QT-build
 ```
+Then inside the container simply run:
 
-If you want to permently delete the container simply run the following in Powershell:
 ```
-docker rm -f qt/mxe:win64
+cd /AerOptGUI
+qmake GeneticGui-docker.pro
+make clean
+make
 ```
+
+Finally, if you want to delete the container simply run the following in Powershell:
+
+```
+docker rm -f QT-build
+```
+
+Or if you want to remove the image you can run:
+
+```
+docker image rm -f qt/mxe:win64
+```
+
+Note: you will need to re-run the docker build command if you do this and then want to re-build
+again at a later date. Since this, as discussed earlier this can take several hours we advice caution when doing this.
+
 At this point you have everything you need. What follows are the old instructions to compile dynamically with QT creator
 should you wish to use it.
 
