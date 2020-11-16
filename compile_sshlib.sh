@@ -8,4 +8,6 @@ x86_64-w64-mingw32.static-cmake -DWITH_EXAMPLES=OFF -DBUILD_SHARED_LIBS=OFF -DWI
 make clean
 make && make install
 echo "complete"
-PATH="${PATH}:/opt/mxe/usr/x86_64-w64-mingw32.static/lib"
+
+#PATH="${PATH}:/opt/mxe/usr/bin:/opt/mxe/usr/x86_64-w64-mingw32.static/qt5/bin/"
+

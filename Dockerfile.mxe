@@ -30,12 +30,10 @@ RUN \
 	cd $InstDIR && \
 	git clone https://git.libssh.org/projects/libssh.git libssh && \
 	cd libssh && \
-	git checkout libssh-0.9.4 && \
+	git checkout stable-0.8 && \
 	mkdir build && cd build && \
-	x86_64-w64-mingw32.static-cmake -DWITH_EXAMPLES=OFF -DBUILD_SHARED_LIBS=OFF \ 
-        -DWITH_STATIC_LIB=ON -DOPENSSL_ROOT_DIR=opt/mxe/usr/x86_64-w64-mingw32.static .. && \
-	make && \
-    make install && \
+	x86_64-w64-mingw32.static-cmake -DWITH_EXAMPLES=OFF -DBUILD_SHARED_LIBS=OFF -DWITH_STATIC_LIB=ON .. && \
+	make -j$NPROC && \
 	echo "build complete" && \
     exit 0
 
