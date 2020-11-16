@@ -1,7 +1,6 @@
 # The AerOpt GUI
 
 ## Compiling statically with Docker
-<<<<<<< HEAD
 If you are compiling on windows the new recommended way of compiling the AerOpt GUI is to use Docker to create a Docker
 container based of the included DockerFile "DockerFile.mxe". This has been setup to create a single
 executable with all the QT libraires built into it. Docker is a tool to run lightweight virtual machines
@@ -42,45 +41,7 @@ in your home folder (generally this is 'C:\Users\YOUR_USERNAME'), which is where
 
 Copy the following commands in to the command prompt and press Enter
 ```
-### CHANGE ME ####
-=======
-If you are compiling on windows the recommended way of compiling the AerOpt GUI is using the included docker 
-image "Dockerfile.mxe". This has been setup to create a single executable with all the QT libraires built
-into it. Docker is a tool to run lightweight virtual machines to perform specific tasks. In our case this
-has been configured to run a minimal install of ubuntu linux which has been setup with a static build of QT
-and the tools nessacary to crosscompile AerOpt GUI for windows. 
-
-This may seem quite a roundabout way of achiving this since is it is possible to build QT staically for windows.
-However, this process is far from easy as it fraught with errors and is as such not recomended. If you don't wish 
-to (or can't) use Docker you can follow the instructions under **Compiling in QT Creator** to compile a dynamically 
-linked executable with QT creator. You will then however, need to perform some extra steps to distribute the executable.
-see **Deploying** for details.
-
-### Setup
-First you will need to install [git](https://gitforwindows.org/), if you don't already have it.
-Go to the [git for Windows home page](https://gitforwindows.org/) and click download.
-
-Next download docker desktop for [windows](https://www.docker.com/get-started) and install it with the default settings.
-
-Windows will ask you to reboot after which docker will automatcally start runnng once you log back in (if you don't want 
-this behaviour you can change this in the settings however, you need to remember to start docker whenever you want to re-compile
-the code). 
-
-At this point docker may throw an error about windows sub system for linux (WSL2) support. If this occurs you need to 
-download the WSL2 kernal from [here](https://docs.microsoft.com/en-gb/windows/wsl/wsl2-kernel) and install it.
-
-At this point there is a tutorial which can go through if you wish (or you can press the skip button in the bottom left corner) 
-after which you can close docker.
-
-Next, download the AerOpt GUI repo. Since you have git you should have a program called `Git Bash` which you can use it to clone 
-the project. Run `Git Bash` to open the command line interface.
- 
-If you are familiar with it, use `cd` to navigate to where you want to download the repo. If not, you probably want to place it 
-in your home folder (generally this is 'C:\Users\USERNAME'), which is where you start.
-
-Copy the following commands in to the command line and press Enter
-```
-git clone https://github.com/DrBenEvans/AerOptGUI.git
+git clone https://github.com/sa2c/AerOptGUI
 cd AerOptGUI
 ```
 
