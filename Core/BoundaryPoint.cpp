@@ -59,7 +59,7 @@ void BoundaryPoint::setBottomRightBound(QPointF pos) {
     mControlPointRect.setBottomRight(pos);
 }
 
-QRectF BoundaryPoint::setControlPointRect(QRectF ctlPointRect) {
+void BoundaryPoint::setControlPointRect(QRectF ctlPointRect) {
     mControlPointRect = ctlPointRect;
 }
 

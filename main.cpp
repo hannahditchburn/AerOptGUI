@@ -51,23 +51,36 @@ void firstTimeSetup(QString AerOptWorkDir) {
 #endif
 
     bool copySuccess;
+    bool exists = false;
 
     QString mesherExe = QDir::toNativeSeparators(exeDir + "MeshGenerator" + targetext);
     copySuccess = QFile::copy(":/executables/MeshGenerator" + ext, mesherExe);
+    settings.setValue("mesher/exe", mesherExe);
     if(copySuccess) {
-        QFile(mesherExe).setPermissions(QFileDevice::ExeUser);
-        settings.setValue("mesher/exe", mesherExe);
+        QFile(mesherExe).setPermissions(QFileDevice::ExeUser);        
     } else {
-        qCritical() << "Mesher file copy failed";
+        exists = QFile::exists(mesherExe);
+        if(!exists){
+            qCritical() << "Mesher file copy failed - check for presence of " << mesherExe;
+        }
+        else {
+            qInfo() << "MeshGenerator.exe already present in " << exeDir;
+        }
     }
 
     QString aeroptExe = QDir::toNativeSeparators(exeDir + "AerOpt" + targetext);
     copySuccess = QFile::copy(":/executables/AerOpt" + ext, aeroptExe);
+    settings.setValue("AerOpt/Executable", aeroptExe);
     if(copySuccess) {
-        QFile(aeroptExe).setPermissions(QFileDevice::ExeUser);
-        settings.setValue("AerOpt/executable", aeroptExe);
+        QFile(aeroptExe).setPermissions(QFileDevice::ExeUser);        
     } else {
-        qCritical() << "AerOpt executable file copy failed";
+        exists = QFile::exists(aeroptExe);
+        if(!exists){
+            qCritical() << "AerOpt executable file copy failed - check for presence of " << aeroptExe;
+        }
+        else {
+            qInfo() << "AerOpt.exe already present in " << exeDir;
+        }
     }
 
     QString exePath = QDir::toNativeSeparators(exeDir + "Delaunay_2D" + targetext);
@@ -108,14 +121,30 @@ void firstTimeSetup(QString AerOptWorkDir) {
     settings.setArrayIndex(0);
     QString profileFile = QDir::toNativeSeparators(profileDir + "NACA0024.prf");
     copySuccess = QFile::copy(":/profiles/NACA0024.prf", profileFile);
-    if(copySuccess)
-        settings.setValue("filepath", profileFile);
+    settings.setValue("filepath", profileFile);
+    if(!copySuccess) {
+        exists = QFile::exists(profileFile);
+        if(!exists){
+            qCritical() << "Copying of NACA0024.prf unsuccessful - check " << profileFile;
+        }
+        else {
+            qInfo() << "NACA0024.prf already present in " << profileDir;
+        }
+    }
 
     settings.setArrayIndex(1);
     profileFile = QDir::toNativeSeparators(profileDir + "NACA21120.prf");
     copySuccess = QFile::copy(":/profiles/NACA21120.prf", profileFile);
-    if(copySuccess)
-        settings.setValue("filepath", profileFile);
+    settings.setValue("filepath", profileFile);
+    if(!copySuccess) {
+        exists = QFile::exists(profileFile);
+        if(!exists){
+            qCritical() << "Copying of NACA21120.prf unsuccessful - check " << profileFile;
+        }
+        else {
+            qInfo() << "NACA21120.prf already present in " << profileDir;
+        }
+    }
 
     settings.endArray();
 
@@ -172,6 +201,18 @@ void checkSettings()
 
     // if working directory exists, then no need for setup
     if(!QDir(AerOptWorkDir).exists()) {
+        firstTimeSetup(AerOptWorkDir);
+    }
+
+    // Check current logged settings. If any are blank, missing or incorrect, perform setup
+    QSettings settings;
+    bool settingcheck = true;
+    settingcheck &= (AerOptWorkDir==QDir::fromNativeSeparators(settings.value("AerOpt/workingDirectory").toString()));
+    settingcheck &= QFile::exists(settings.value("mesher/exe").toString());
+    settingcheck &= QFile::exists(settings.value("AerOpt/exe").toString());
+    settingcheck &= QDir(settings.value("AerOpt/inFolder").toString()).exists();
+    settingcheck &= QDir(settings.value("AerOpt/scratchDir").toString()).exists();
+    if(!settingcheck) {
         firstTimeSetup(AerOptWorkDir);
     }
 }

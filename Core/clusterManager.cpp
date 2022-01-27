@@ -317,9 +317,9 @@ int fileToCluster(std::string source, std::string destination, ssh_session sessi
     rc = sftp_close(file);
     if (rc != SSH_OK) {
         fprintf(stderr, "FileToCluster: Can't close the read file: %s\n",
-                ssh_get_error(session));
-        return rc;
+                ssh_get_error(session)); 
     }
+    return rc;
 }
 
 
@@ -456,6 +456,7 @@ int getClusterFolder(std::string source, std::string destination, ssh_session se
             }
         }
     }
+    return 0;
 }
 
 

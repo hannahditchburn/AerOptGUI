@@ -75,7 +75,7 @@ public:
      * @param ctlPointRect The Control Point bounding box.
      * @return The newly set Control Point bounding box.
      */
-    QRectF setControlPointRect(QRectF ctlPointRect);
+    void setControlPointRect(QRectF ctlPointRect);
 
     /**
      * @brief setTopLeftBound Set top-left bound for Control Point bounding box which

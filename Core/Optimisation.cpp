@@ -1085,7 +1085,7 @@ bool Optimisation::readInitialBoundaryPoints() {
         // Add Bounding Boxes to Control Points
         QString inputFilePath = simulationDirectoryPath() + "/AerOpt_InputParameters.txt";
         std::ifstream bbInfile(inputFilePath.toStdString(), std::ifstream::in);
-        success &= bbInfile.is_open();
-
+        success &= bbInfile.is_open();        
     }
+    return success;
 }
