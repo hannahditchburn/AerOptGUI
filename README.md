@@ -58,7 +58,7 @@ docker build -f Dockerfile.mxe -t qt/mxe:win64 .
 Warning this command can take several hours to complete depending on your computer and network connection as it has to fetch and 
 compile a of lot diferent of tools (fortunately it is only required to be run once). 
 
-## Compiling the code
+### Compiling the code
 Once this is complete we now have a Docker image we can use to create a container with the following command.
 
 ```
@@ -117,9 +117,9 @@ again at a later date. Since this, as discussed earlier this can take several ho
 At this point you have everything you need. What follows are the alternative instructions to compile dynamically with QT Creator
 should you wish to use it.
 
-### Compiling in QT Creator
+## Compiling in QT Creator
 
-## Install Compilation Requirements
+### Install Compilation Requirements
 
 You can download the IDE on the [QT website](https://www.qt.io/download).
 Choose the open source option and download the installer.
@@ -197,7 +197,7 @@ Replace `USERNAME` with your username on each line. If `vcpkg` is in a custom lo
 
 The AerOpt GUI executable can then be constructed using the `Build` icon in the bottom left of the IDE. If you wish to modify the sources or headers, you can navigate through the project files in a panel in the top left and open them in the QT Creator editor. 
 
-### Setup on the Cluster
+## Setup on the Cluster
 
 The AerOpt GUI depends on a specific version of the AerOpt tool on the cluster.
 You can use git to get the newest version.
@@ -229,12 +229,12 @@ ln -s source/AerOpt_v3.5 ../AerOpt
 You should now be able to run jobs on the cluster using the GUI. If the job does not run on the cluster, logs can be found in `AerOpt/run_[OptimisationName]/screenlog.0` to help diagnose the problem.
 
 
-### Deploying
+## Deploying
 
 If you followed the Docker instructions the compiled executable you created can be distributed without needing any additional libraries or tools. 
 However, if you compiled the code dynamically using QT Creator you will need to do some extra work.
 
-## Deploying for Windows with windeployqt
+### Deploying for Windows with windeployqt
 
 QT comes with a deployment tool that copies the necessary library binaries to the executable directory called `windeployqt`. This can be used through Powershell with the following commands
 ```
@@ -247,15 +247,19 @@ The above assumes QT has been installed in C:\Qt - if you have used an alternati
 
 If you have added the library paths for `openssl`, `libssh`, `zlib` and `pthread`, the application should run from Windows Explorer directly. However, you will need to copy the library files to the AerOptGui.exe directory if you wish to pass on the executable folder to others. In Powershell, this can be done with the following
 ```
-cp "C:\Users\USERNAME\vcpkg\packages\libssh_x64-windows\bin\ssh.dll","C:\Users\USERNAME\vcpkg\packages\openssl-windows_x64-windows\bin\libcrypto-1_1-x64.dll","C:\Users\USERNAME\vcpkg\packages\openssl-windows_x64-windows\bin\libssl-1_1-x64.dll","C:\Users\USERNAME\vcpkg\packages\zlib_x64-windows\bin\zlib1.dll","C:\Users\USERNAME\vcpkg\packages\pthreads_x64-windows\bin\pthreadVC3.dll"
+cp "C:\Users\USERNAME\vcpkg\packages\libssh_x64-windows\bin\ssh.dll"
+cp "C:\Users\USERNAME\vcpkg\packages\openssl-windows_x64-windows\bin\libcrypto-1_1-x64.dll"
+cp "C:\Users\USERNAME\vcpkg\packages\openssl-windows_x64-windows\bin\libssl-1_1-x64.dll"
+cp "C:\Users\USERNAME\vcpkg\packages\zlib_x64-windows\bin\zlib1.dll"
+cp "C:\Users\USERNAME\vcpkg\packages\pthreads_x64-windows\bin\pthreadVC3.dll"
 ```
 As before, replace USERNAME with your username, and amend the paths if you have vcpkg installed on a custom path.
 
-Please note that AerOptGUI requires a set of executables (copied into `[EXECUTABLE DIRECTORY]/AerOptFiles/Executables`) and example profiles (copied into `[EXECUTABLE DIRECTORY]/AerOptFiles/profiles`) to run properly. This copying is performed on first run of the executable from the `Executables` and `ExampleProfiles` folders included in this GitHub repository. As such, it is recommended to run AerOptGUI.exe at least once on your development machine before passing the folder on to other users. No optimisation or mesh generation is required - simply open and close and the necessary files will automatically be copied.
+Please note that AerOptGUI requires a set of executables (copied into `[EXECUTABLE DIRECTORY] /AerOptFiles/Executables`) and example profiles (copied into `[EXECUTABLE DIRECTORY] /AerOptFiles/profiles`) to run properly. This copying is performed on first run of the executable from the `Executables` and `ExampleProfiles` folders included in this GitHub repository. As such, it is recommended to run AerOptGUI.exe at least once on your development machine before passing the folder on to other users. No optimisation or mesh generation is required - simply open and close and the necessary files will automatically be copied.
 
 When all libraries, executables and profiles have been set up, you should be able to simply zip the folder containing AerOptGUI, its executables and libraries and send it to any 64-bit Windows system to run. A PortableApps solution for deployment is also planned for a future release.
 
-## Deploying using GitHub repositories
+### Deploying using GitHub repositories
 
 There are two deployed releases in [Jarno's github page](https://github.com/rantahar/AerOpt-gui/releases). All you need to do to run this version
 of AerOpt is to donwload AerOptGui.zip, extract the file and run AerOptGui.exe in the new folder. This is much easier for a user than compiling 
