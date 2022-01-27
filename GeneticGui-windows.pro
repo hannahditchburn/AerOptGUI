@@ -144,17 +144,11 @@ INCLUDEPATH += \
 RESOURCES += \
     Resourses.qrc
 
-PRE_TARGETDEPS += C:\Users\m.y.pei\vcpkg\packages\libssh_x64-windows\lib\ssh.lib
-LIBS += -LC:\Users\m.y.pei\vcpkg\packages\libssh_x64-windows\lib\ -lssh
-INCLUDEPATH += C:\Users\m.y.pei\vcpkg\packages\libssh_x64-windows\include
-DEPENDPATH += C:\Users\m.y.pei\vcpkg\packages\libssh_x64-windows\include
+PRE_TARGETDEPS += C:\Users\USERNAME\vcpkg\packages\libssh_x64-windows\lib\ssh.lib
+LIBS += -LC:\Users\USERNAME\vcpkg\packages\libssh_x64-windows\lib\ -lssh
+INCLUDEPATH += C:\Users\USERNAME\vcpkg\packages\libssh_x64-windows\include
+DEPENDPATH += C:\Users\USERNAME\vcpkg\packages\libssh_x64-windows\include
 
-LIBS += -LC:\Users\m.y.pei\vcpkg\packages\openssl_x64-windows\lib\ -llibcrypto -llibssl
-INCLUDEPATH += C:\Users\m.y.pei\vcpkg\packages\openssl_x64-windows\include
-DEPENDPATH += C:\Users\m.y.pei\vcpkg\packages\openssl_x64-windows\include
-
-# win32:CONFIG(release, debug|release): LIBS += -LC:/Users/Michael/source/repos/vcpkg-master/packages/pthreads_x86-windows/lib/ -lpthreadVC3
-# else:win32:CONFIG(debug, debug|release): LIBS += -LC:/Users/Michael/source/repos/vcpkg-master/packages/pthreads_x86-windows/lib/ -lpthreadVC3d
-
-# INCLUDEPATH += C:/Users/Michael/source/repos/vcpkg-master/packages/pthreads_x64-windows/include
-# DEPENDPATH += C:/Users/Michael/source/repos/vcpkg-master/packages/pthreads_x64-windows/include
+LIBS += -LC:\Users\USERNAME\vcpkg\packages\openssl_x64-windows\lib\ -llibcrypto -llibssl
+INCLUDEPATH += C:\Users\USERNAME\vcpkg\packages\openssl_x64-windows\include
+DEPENDPATH += C:\Users\USERNAME\vcpkg\packages\openssl_x64-windows\include
