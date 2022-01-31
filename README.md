@@ -257,7 +257,9 @@ As before, replace USERNAME with your username, and amend the paths if you have 
 
 Please note that AerOptGUI requires a set of executables (copied into `[EXECUTABLE DIRECTORY] /AerOptFiles/Executables`) and example profiles (copied into `[EXECUTABLE DIRECTORY] /AerOptFiles/profiles`) to run properly. This copying is performed on first run of the executable from the `Executables` and `ExampleProfiles` folders included in this GitHub repository. As such, it is recommended to run AerOptGUI.exe at least once on your development machine before passing the folder on to other users. No optimisation or mesh generation is required - simply open and close and the necessary files will automatically be copied.
 
-When all libraries, executables and profiles have been set up, you should be able to simply zip the folder containing AerOptGUI, its executables and libraries and send it to any 64-bit Windows system to run. A PortableApps solution for deployment is also planned for a future release.
+When all libraries, executables and profiles have been set up, you can package the AerOptGUI.exe application and libraries as a self-extracting archive (SFX) using [7zip](https://www.7-zip.org/). A guide for this process can be found [here](https://www.how2shout.com/how-to/how-to-create-self-extracting-archives-with-7zip-sfx-builder.html). This will generate a .exe file that when executed unpacks the files in their necessary locations, allowing you to send AerOptGUI.exe to any 64-bit Windows system to run. 
+
+A PortableApps solution for deployment is also planned for a future release.
 
 ### Deploying using GitHub repositories
 

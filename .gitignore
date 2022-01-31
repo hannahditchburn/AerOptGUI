@@ -18,3 +18,4 @@ FLITE/*.txt
 FLITE/*.bat
 FLITE/*.scr
 
+vcpkg-libinstall.sh
