@@ -213,7 +213,7 @@ You should now be able to run jobs on the cluster using the GUI.
 
 ## Deploying
 
-I you followed the docker instructions the compiled executable you created can be distributed without needing any additional libraries or tools. 
+If you followed the docker instructions the compiled executable you created can be distributed without needing any additional libraries or tools. 
 However, if you compiled the code dynamically using QT creator you will need to do some extra work.
 
 There are two deployed releases in [Jarno's github page](https://github.com/rantahar/AerOpt-gui/releases). All you need to do to run this version
