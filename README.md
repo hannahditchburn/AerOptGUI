@@ -183,6 +183,10 @@ Next, download the AerOpt GUI. Since you have git, you can use it to clone the p
 ```
 git clone https://github.com/DrBenEvans/AerOptGUI.git
 ```
+```
+git clone -b windows-build https://github.com/sa2c/AerOptGUI
+```
+(The later contains `AerOptGUI\GeneticGui-windows.pro`)
 
 Open QT Creator, click `Open Project` and open `AerOptGUI\GeneticGui-windows.pro`, which should now be in your home directory.
 The first time you do this the IDE will ask you about the configuration.
@@ -223,7 +227,7 @@ This step will be removed or automated in a future release.
 Once permissions are fixed, a symbolic link needs to be created to the AerOpt_v3.5 executable. To do so, use the following lines
 ```
 cd ..
-ln -s source/AerOpt_v3.5 ../AerOpt
+ln -s source/AerOpt_v3.5 ./AerOpt
 ```
 
 You should now be able to run jobs on the cluster using the GUI. If the job does not run on the cluster, logs can be found in `AerOpt/run_[OptimisationName]/screenlog.0` to help diagnose the problem.
