@@ -148,7 +148,7 @@ void firstTimeSetup(QString AerOptWorkDir) {
 
     settings.endArray();
 
-    // Input folder is read by AeroOpt executable
+    // Input folder is read by AerOpt executable
     QString inFolder = AerOptWorkDir + "Input_Data/";
     inFolder = QDir::toNativeSeparators(inFolder);
     settings.setValue("AerOpt/inFolder", inFolder);
@@ -204,14 +204,31 @@ void checkSettings()
         firstTimeSetup(AerOptWorkDir);
     }
 
+    QString ext = ".exe";
+    QString targetext = ".exe";
+#ifdef Q_OS_UNIX
+        ext = ".unix";
+        targetext = "";
+#endif
+#ifdef Q_OS_MACOS
+        ext = ".mac";
+        targetext = "";
+#endif
+
+    // Write out expected directories for checking purposes
+    QString mesherExe = QDir::toNativeSeparators(AerOptWorkDir + "Executables/MeshGenerator" + targetext);
+    QString aeroptExe = QDir::toNativeSeparators(AerOptWorkDir + "Executables/AerOpt" + targetext);
+    QString inFolder = QDir::toNativeSeparators(AerOptWorkDir + "Input_Data/");
+    QString scratchPath = QDir::toNativeSeparators(AerOptWorkDir + "Scratch/");
+
     // Check current logged settings. If any are blank, missing or incorrect, perform setup
     QSettings settings;
     bool settingcheck = true;
     settingcheck &= (AerOptWorkDir==QDir::fromNativeSeparators(settings.value("AerOpt/workingDirectory").toString()));
-    settingcheck &= QFile::exists(settings.value("mesher/exe").toString());
-    settingcheck &= QFile::exists(settings.value("AerOpt/exe").toString());
-    settingcheck &= QDir(settings.value("AerOpt/inFolder").toString()).exists();
-    settingcheck &= QDir(settings.value("AerOpt/scratchDir").toString()).exists();
+    settingcheck &= (mesherExe==QDir::fromNativeSeparators(settings.value("mesher/exe").toString()));
+    settingcheck &= (aeroptExe==QDir::fromNativeSeparators(settings.value("AerOpt/exe").toString()));
+    settingcheck &= (inFolder==QDir::fromNativeSeparators(settings.value("AerOpt/inFolder").toString()));
+    settingcheck &= (scratchPath==QDir::fromNativeSeparators(settings.value("AerOpt/scratchDir").toString()));
     if(!settingcheck) {
         firstTimeSetup(AerOptWorkDir);
     }

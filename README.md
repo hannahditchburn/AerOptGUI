@@ -130,39 +130,12 @@ When selecting components, check the following options:
 [Qt 5.15.2 -> Qt Charts]
 [Developer and Designer Tools -> Qt Creator 6.0.2] (automatically checked)
 
-
 You will also need the ssh and ssl libraries.
-On Windows, we recommend using [vcpkg](https://github.com/microsoft/vcpkg) for this. This requires Visual Studio to be installed on your machine.
+On Windows, the library installation is handled within the `vcpkg-libinstall.sh` script using [vcpkg](https://github.com/microsoft/vcpkg). This requires Visual Studio to be installed on your machine.
 You will also need to install [git](https://gitforwindows.org/), if you don't already have it.
 Go to the [git for Windows home page](https://gitforwindows.org/) and click download.
 
-After installing git, you should also have a program called `Git Bash`.
-Run it to open a command line interface. If you are familiar with it, use `cd`
-to navigate where you want to install vcpkg.
-If not, you probably want to install it in your home folder, which is where you start.
-
-Copy the following commands in to the command line and press Enter to execute
-```
-git clone https://github.com/Microsoft/vcpkg.git
-cd vcpkg
-.\bootstrap-vcpkg.sh
-```
-For later convenience, you may want to execute the following line as well.
-Windows will ask for admin access.
-```
-./vcpkg integrate install
-```
-
-Now you can install libraries. You are already in the correct folder, but once you
-close the window and open a new one, you will need to run
-```
-cd vcpkg
-```
-to get back.
-AerOpt GUI requires four external libraries to run: `libssh`, `openssl`, `zlib` and `pthread`. These can be installed with the following command
-```
-./vcpkg install libssh:x64-windows openssl:x64-windows zlib:x64-windows pthreads:x64-windows
-```
+`vcpkg-libinstall.sh` will automatically install vcpkg into your home directory `C:\Users\USERNAME` when ran - if you wish to alter this behaviour and install elsewhere, you can move the script into your target directory and remove the `cd %userprofile%` line within the script.
 
 For convenience when building and testing, we recommend adding the library binaries to your system path. Open `System Properties` in the start menu, and press enter.
 Click `Environment Variables`, find `path` in the second panel and double click.
@@ -223,7 +196,7 @@ This step will be removed or automated in a future release.
 Once permissions are fixed, a symbolic link needs to be created to the AerOpt_v3.5 executable. To do so, use the following lines
 ```
 cd ..
-ln -s source/AerOpt_v3.5 ../AerOpt
+ln -s source/AerOpt_v3.5 ./AerOpt
 ```
 
 You should now be able to run jobs on the cluster using the GUI. If the job does not run on the cluster, logs can be found in `AerOpt/run_[OptimisationName]/screenlog.0` to help diagnose the problem.
