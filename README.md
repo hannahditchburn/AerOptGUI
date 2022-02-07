@@ -146,7 +146,7 @@ C:\Users\USERNAME\vcpkg\packages\openssl-windows_x64-windows\bin
 C:\Users\USERNAME\vcpkg\packages\zlib_x64-windows\bin
 C:\Users\USERNAME\vcpkg\packages\pthreads_x64-windows\bin
 ```
-replacing `USERNAME` with your actual user name. For this change to take effect, you may need to reboot.
+Replacing `USERNAME` with your actual user name. For this change to take effect, you may need to reboot.
 
 Note that if you installed `vcpkg` in a custom location, you need to change the paths accordingly.
 
@@ -156,6 +156,10 @@ Next, download the AerOpt GUI. Since you have git, you can use it to clone the p
 ```
 git clone https://github.com/DrBenEvans/AerOptGUI.git
 ```
+```
+git clone -b windows-build https://github.com/sa2c/AerOptGUI
+```
+(The later contains `AerOptGUI\GeneticGui-windows.pro`)
 
 Open QT Creator, click `Open Project` and open `AerOptGUI\GeneticGui-windows.pro`, which should now be in your home directory.
 The first time you do this the IDE will ask you about the configuration.
@@ -226,7 +230,7 @@ cp "C:\Users\USERNAME\vcpkg\packages\openssl-windows_x64-windows\bin\libssl-1_1-
 cp "C:\Users\USERNAME\vcpkg\packages\zlib_x64-windows\bin\zlib1.dll"
 cp "C:\Users\USERNAME\vcpkg\packages\pthreads_x64-windows\bin\pthreadVC3.dll"
 ```
-As before, replace USERNAME with your username, and amend the paths if you have vcpkg installed on a custom path.
+As before, replace USERNAME with your username, and amend the paths if you have vcpkg installed on a custom path. In this step you may get warning messages that some library files does not exist, for example, `libcrypto-1_1-x64.dll` and `libssl-1_1-x64.dll`. Please check `C:\Users\USERNAME\vcpkg\packages` to see what your laptop has installed OpenSSL in, as they may be using their old names, e.g. `libeay32.dll` and `ssleay32.dll`.
 
 Please note that AerOptGUI requires a set of executables (copied into `[EXECUTABLE DIRECTORY] /AerOptFiles/Executables`) and example profiles (copied into `[EXECUTABLE DIRECTORY] /AerOptFiles/profiles`) to run properly. This copying is performed on first run of the executable from the `Executables` and `ExampleProfiles` folders included in this GitHub repository. As such, it is recommended to run AerOptGUI.exe at least once on your development machine before passing the folder on to other users. No optimisation or mesh generation is required - simply open and close and the necessary files will automatically be copied.
 
