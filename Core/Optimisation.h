@@ -191,6 +191,7 @@ public:
     QString label() const;
     QString simulationDirectoryName();
     QString simulationDirectoryPath();
+    QString simulationLoadPath();
 
     /**
      * @brief setLabel Set the identification label

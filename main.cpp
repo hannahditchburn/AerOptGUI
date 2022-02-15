@@ -33,6 +33,9 @@ void firstTimeSetup(QString AerOptWorkDir) {
     settings.setValue("AerOpt/workingDirectory", AerOptWorkDir);
     QDir().mkdir(AerOptWorkDir);
 
+    QString exeLinkDir = QDir::toNativeSeparators(AerOptWorkDir + "Executables/");
+    QDir().mkdir(exeLinkDir);
+
     settings.setValue("AerOpt/startLoadPath", AerOptWorkDir);
 
     // setup executables
@@ -41,6 +44,7 @@ void firstTimeSetup(QString AerOptWorkDir) {
 
     QString ext = ".exe";
     QString targetext = ".exe";
+
 #ifdef Q_OS_UNIX
         ext = ".unix";
         targetext = "";
@@ -51,6 +55,7 @@ void firstTimeSetup(QString AerOptWorkDir) {
 #endif
 
     bool copySuccess;
+    bool linkSuccess;
     bool exists = false;
 
     QString mesherExe = QDir::toNativeSeparators(exeDir + "MeshGenerator" + targetext);
@@ -97,7 +102,7 @@ void firstTimeSetup(QString AerOptWorkDir) {
 
     qDebug() << "Working Directory:" << AerOptWorkDir;
     qDebug() << "Mesher Exe Path" << mesherExe;
-    qDebug() << "AeroOpt Exe Path" << aeroptExe;
+    qDebug() << "AerOpt Exe Path" << aeroptExe;
 
     bool c = true;
     QFileInfo checkMesher(mesherExe);
@@ -226,7 +231,7 @@ void checkSettings()
     bool settingcheck = true;
     settingcheck &= (AerOptWorkDir==QDir::fromNativeSeparators(settings.value("AerOpt/workingDirectory").toString()));
     settingcheck &= (mesherExe==QDir::fromNativeSeparators(settings.value("mesher/exe").toString()));
-    settingcheck &= (aeroptExe==QDir::fromNativeSeparators(settings.value("AerOpt/exe").toString()));
+    settingcheck &= (aeroptExe==QDir::fromNativeSeparators(settings.value("AerOpt/Executable").toString()));
     settingcheck &= (inFolder==QDir::fromNativeSeparators(settings.value("AerOpt/inFolder").toString()));
     settingcheck &= (scratchPath==QDir::fromNativeSeparators(settings.value("AerOpt/scratchDir").toString()));
     if(!settingcheck) {

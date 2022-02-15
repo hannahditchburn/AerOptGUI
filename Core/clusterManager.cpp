@@ -44,9 +44,15 @@ int clusterManager::submitToCluster(){
     std::string AerOptNodeFile =  settings.value("AerOpt/nodeFile").toString().toStdString();
     std::string meshDatFile = settings.value("mesher/initMeshFile").toString().toStdString();
 
-    std::string clusterdir = "AerOpt/"+mWorkingDirectory;
+    std::string clusterroot = "AerOpt/";
+    std::string clusterdir = clusterroot+mWorkingDirectory;
     std::string outputDirectory = mWorkingDirectory+"/Output_Data";
     std::string outputfilename = outputDirectory+"/output.log";
+    std::string simulationdir = clusterdir+"/"+mWorkingDirectory;
+
+    // Status checker parameters:
+    int clusterwait = 10;
+    std::string wait = std::to_string(clusterwait);
 
     // Delete any conflicting directory and create the new one
     sshExecute(session, "rm -r "+clusterdir);
@@ -67,7 +73,14 @@ int clusterManager::submitToCluster(){
 
     // Create a run script and start it in screen
     sshExecute(session, "cd "+clusterdir+"; echo module load mkl > run.sh");
-    sshExecute(session, "cd "+clusterdir+"; echo './AerOpt 2>&1 > "+outputfilename+"' >> run.sh");
+    // Background AerOpt so the bash script can monitor status.txt for changes.
+    sshExecute(session, "cd "+clusterdir+"; echo './AerOpt 2>&1 > "+outputfilename+" &' >> run.sh");
+    // Add lines to script that execute time check loop.
+    sshExecute(session, "cd "+clusterdir+"; echo 'while sleep "+wait+"; do TIME=`stat -c %y "+mWorkingDirectory+"/status.txt`' >> run.sh");
+    sshExecute(session, "cd "+clusterdir+"; echo '  if [[ $TIME == $TIME2 ]]; then' >> run.sh");
+    sshExecute(session, "cd "+clusterdir+"; echo '      kill %1; break' >> run.sh");
+    sshExecute(session, "cd "+clusterdir+"; echo '  fi; TIME2=$TIME; ' >> run.sh");
+    sshExecute(session, "cd "+clusterdir+"; echo 'done' >> run.sh");
     sshExecute(session, "cd "+clusterdir+"; chmod +x run.sh");
     sshExecute(session, "cd "+clusterdir+"; screen -L -d -m ./run.sh ");
 
@@ -157,7 +170,6 @@ void clusterManager::folderCheckLoop(){
 
             fitness_file.close();
         }
-
 
         sleep(5);
     }
@@ -471,6 +483,8 @@ int clusterManager::folderFromCluster(std::string source, std::string destinatio
     sftp = createSFTPSession(session);
 
     getClusterFolder( source, destination, session, sftp);
+
+    sshExecute(session, "cd "+source+"; echo 'Folder checked.' >> status.txt");
 
     ssh_disconnect(session);
     ssh_free(session);

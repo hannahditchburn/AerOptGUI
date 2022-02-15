@@ -232,6 +232,16 @@ QString Optimisation::simulationDirectoryPath() {
     return dir;
 }
 
+QString Optimisation::simulationLoadPath() {
+    QSettings settings;
+    QString dir = settings.value("AerOpt/loadFolder", "").toString();
+    if(dir.isEmpty()) // Default to simulationDirectoryPath if loadFolder not set.
+    {
+        dir = simulationDirectoryPath();
+    }
+    return dir;
+}
+
 QString Optimisation::outputDataDirectory() {
     QString outputData = simulationDirectoryPath();
     outputData += "/Output_Data";
@@ -269,7 +279,7 @@ void Optimisation::writeProfilePointsToSimulationDir() {
 }
 
 bool Optimisation::readProfilePointsFromSimulationDir() {
-    QString filePath = simulationDirectoryPath() + "/profilePoints.txt";
+    QString filePath = simulationLoadPath() + "/profilePoints.txt";
     QDir::toNativeSeparators(filePath);
 
     Profile profile;
@@ -318,6 +328,9 @@ bool Optimisation::run() {
     r &= createAerOptNodeFile(AerOptNodeFile);
     r &= createAerOptBoundaryPointFile(AerOptBoundaryFile);
 
+    // Set loadFolder to outputDataDirectory
+    settings.setValue("AerOpt/loadFolder",simulationDirectoryPath());
+
     //then run aeropt
     if (r)
     {
@@ -349,6 +362,7 @@ bool Optimisation::run() {
     {
         qWarning() << "Process Aborted!";
     }
+
     return r;
 }
 
@@ -646,7 +660,10 @@ void Optimisation::optimiserFinished(int exitCode, QProcess::ExitStatus exitStat
 
     if (!r) qWarning() << "Something went wrong with file cleanup!";
 
+    settings.setValue("AerOpt/loadFolder",simulationDirectoryPath());
     readFitness();
+    // Reset loadFolder after optimisation cleanup and displayed.
+    settings.remove("AerOpt/loadFolder");
 }
 
 Mesh* Optimisation::mesh(int genIndex, int agentIndex)
@@ -700,7 +717,7 @@ bool Optimisation::readFitness()
     QString output = "";
     QString fitnessString = "";
 
-    QString path = simulationDirectoryPath() + "/FitnessAll.txt";
+    QString path = simulationLoadPath() + "/FitnessAll.txt";
     path = QDir::toNativeSeparators(path);
 
     QFileInfo checkFit(path);
@@ -921,6 +938,11 @@ bool Optimisation::readAerOptSettings(QString filePath) {
         }
 
     }
+    // Set load directory using the input AerOpt_InputFilePath
+    QFileInfo qloadfile(filePath);
+    QString loaddir = QDir::toNativeSeparators(qloadfile.path());
+    QSettings settings;
+    settings.setValue("AerOpt/loadFolder",loaddir);
 
     return success;
 }
@@ -932,6 +954,9 @@ bool Optimisation::load(QString aerOptInputFilePath) {
     success &= readProfilePointsFromSimulationDir();
     success &= readInitialBoundaryPoints();
     success &= readLogFromFile();
+    // Clear AerOpt/loadFolder to avoid funkiness after successful load.
+    QSettings settings;
+    settings.remove("AerOpt/loadFolder");
 
     return success;
 }
@@ -984,7 +1009,7 @@ bool Optimisation::readLogFromFile() {
 
 bool Optimisation::readInitialBoundaryPoints() {
 
-    QString filePath = simulationDirectoryPath() + "/Boundary_Points.txt";
+    QString filePath = simulationLoadPath() + "/Boundary_Points.txt";
     bool success = true;
     std::ifstream infile(filePath.toStdString(), std::ifstream::in);
     success &= infile.is_open();
