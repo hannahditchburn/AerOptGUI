@@ -5,6 +5,7 @@
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
+#include <QDateTime>
 
 clusterManager::clusterManager()
 {
@@ -31,6 +32,12 @@ void clusterManager::setPassword(QString passwordQString){
     mPassword = passwordQString.toStdString();
 }
 
+void clusterManager::setRunDateTime(){
+    QSettings settings;
+    QDateTime time = QDateTime::currentDateTime();
+    settings.setValue("runTime",time.toString("hhmm"));
+    settings.setValue("runDate",time.toString("yyMMdd"));
+}
 
 int clusterManager::submitToCluster(){
     /* Submit a run to the cluster. Copies necessary input files over, creates a full
@@ -51,7 +58,7 @@ int clusterManager::submitToCluster(){
     std::string simulationdir = clusterdir+"/"+mWorkingDirectory;
 
     // Status checker parameters:
-    int clusterwait = 10;
+    int clusterwait = 15;
     std::string wait = std::to_string(clusterwait);
 
     // Delete any conflicting directory and create the new one
@@ -71,6 +78,14 @@ int clusterManager::submitToCluster(){
     sshExecute(session, "cd "+clusterdir+"; cp ../AerOpt ./");
     sshExecute(session, "cd "+clusterdir+"; cp -r ../Executables ../executables ./");
 
+    // Log the date and time to aid loading files from cluster.
+    setRunDateTime(); // Might have marginal failures if the script runs at a different time.
+    QString datestr = settings.value("runDate").toString();
+    QString timestr = settings.value("runTime").toString();
+    std::string aeroptdir = "AerOpt2D_3.5_"+datestr.toStdString()+"_"+timestr.toStdString();
+    std::string aeroptoutdir = aeroptdir+"/Output_Data/";
+    std::string aeroptfitpath = aeroptdir+"/FitnessAll.txt";
+
     // Create a run script and start it in screen
     sshExecute(session, "cd "+clusterdir+"; echo module load mkl > run.sh");
     // Background AerOpt so the bash script can monitor status.txt for changes.
@@ -80,6 +95,12 @@ int clusterManager::submitToCluster(){
     sshExecute(session, "cd "+clusterdir+"; echo '  if [[ $TIME == $TIME2 ]]; then' >> run.sh");
     sshExecute(session, "cd "+clusterdir+"; echo '      kill %1; break' >> run.sh");
     sshExecute(session, "cd "+clusterdir+"; echo '  fi; TIME2=$TIME; ' >> run.sh");
+    // Check within cluster loop that FitnessAll.txt exists, and whether Output_Data has files.
+    sshExecute(session, "cd "+clusterdir+"; echo '  if test -f "+aeroptfitpath+"; then' >> run.sh");
+    sshExecute(session, "cd "+clusterdir+"; echo '      cp "+aeroptfitpath+" "+mWorkingDirectory+"/.' >> run.sh");
+    sshExecute(session, "cd "+clusterdir+"; echo '  fi; if test -d "+aeroptoutdir+"; then' >> run.sh");
+    sshExecute(session, "cd "+clusterdir+"; echo '      cp -r "+aeroptoutdir+" "+mWorkingDirectory+"/.' >> run.sh");
+    sshExecute(session, "cd "+clusterdir+"; echo '  fi' >> run.sh");
     sshExecute(session, "cd "+clusterdir+"; echo 'done' >> run.sh");
     sshExecute(session, "cd "+clusterdir+"; chmod +x run.sh");
     sshExecute(session, "cd "+clusterdir+"; screen -L -d -m ./run.sh ");
@@ -104,7 +125,7 @@ void clusterManager::folderCheckLoop(){
 
     // Build local filenames
     std::string clusterdir = "AerOpt/" + mWorkingDirectory+"/";
-    outputFilename = mWorkingDirectory + "/Output_Data/output.log";
+    outputFilename = mWorkingDirectory + "/Output_Data/output.log";    
     QString filePath = QString((localdirpath+outputFilename).c_str());
     QDir::toNativeSeparators(filePath);
     outputFilename = filePath.toStdString();
@@ -170,6 +191,12 @@ void clusterManager::folderCheckLoop(){
 
             fitness_file.close();
         }
+
+        // Perform status update to ensure AerOpt continues running on cluster.
+        ssh_session session = createSSHSession(mAddress, mUsername, mPassword);
+        sshExecute(session, "cd "+clusterdir+"; cd "+mWorkingDirectory+"; echo 'Folder checked.' >> status.txt");
+        ssh_disconnect(session);
+        ssh_free(session);
 
         sleep(5);
     }
@@ -483,8 +510,6 @@ int clusterManager::folderFromCluster(std::string source, std::string destinatio
     sftp = createSFTPSession(session);
 
     getClusterFolder( source, destination, session, sftp);
-
-    sshExecute(session, "cd "+source+"; echo 'Folder checked.' >> status.txt");
 
     ssh_disconnect(session);
     ssh_free(session);

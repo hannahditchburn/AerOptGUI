@@ -27,6 +27,8 @@ public:
     void setClusterAddress(QString address);
     void setUsername(QString username);
     void setPassword(QString password);
+    // Included to allow AerOptGUI to correctly pull data from cluster
+    void setRunDateTime();
 
 signals:
     void directoryChanged(const QString&);

@@ -907,7 +907,7 @@ bool Optimisation::readAerOptSettings(QString filePath) {
                     else
                         setOptimisationMethod(Enum::OptMethod::METHODNOTSET);
                 }
-                else if(variable == "IV%SimulationName") {
+                else if((variable == "IV%SimulationName")||(variable == "IV%OutputDirectory")) { //
                     if(strList.size() > 0) {
                         strList = strList.at(1).split("run_");
                         QString label =  strList.at(1);
