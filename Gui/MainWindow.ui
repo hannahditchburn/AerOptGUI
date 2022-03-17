@@ -359,7 +359,7 @@
      <x>0</x>
      <y>0</y>
      <width>1065</width>
-     <height>21</height>
+     <height>26</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuOptimisations">
@@ -387,6 +387,7 @@
      <string>Settings</string>
     </property>
     <addaction name="actionVisualSettings"/>
+    <addaction name="actionClusterDirectory"/>
    </widget>
    <widget class="QMenu" name="menuParallel_Coordinates_Graph">
     <property name="title">
@@ -448,6 +449,11 @@
   <action name="actionShow">
    <property name="text">
     <string>Show</string>
+   </property>
+  </action>
+  <action name="actionClusterDirectory">
+   <property name="text">
+    <string>Directories...</string>
    </property>
   </action>
  </widget>

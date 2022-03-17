@@ -50,6 +50,7 @@ TARGET = AerOptGui
 TEMPLATE = app
 
 SOURCES += \
+    Gui/Dialogs/DirectorySettingsDialog.cpp \
     Gui/GuiComponents/ChartView.cpp \
     Gui/GuiComponents/ParallelCoordinatesWindow.cpp \
     Gui/GuiComponents/chart.cpp \
@@ -87,6 +88,7 @@ SOURCES += \
 
 HEADERS  += \
     Gui/DebugOutput.h \
+    Gui/Dialogs/DirectorySettingsDialog.h \
     Gui/Dialogs/MeshDialog.h \
     Gui/GuiComponents/ChartView.h \
     Gui/GuiComponents/ParallelCoordinatesWindow.h \
@@ -125,6 +127,7 @@ HEADERS  += \
 FORMS    += \
     Gui/DebugOutput.ui \
     Gui/Dialogs/ConfigSimulationDialog.ui \
+    Gui/Dialogs/DirectorySettingsDialog.ui \
     Gui/GuiComponents/ParallelCoordinatesWindow.ui \
     Gui/MainWindow.ui \
     Gui/Dialogs/MeshDialog.ui \
@@ -144,11 +147,11 @@ INCLUDEPATH += \
 RESOURCES += \
     Resourses.qrc
 
-PRE_TARGETDEPS += C:\Users\USERNAME\vcpkg\packages\libssh_x64-windows\lib\ssh.lib
-LIBS += -LC:\Users\USERNAME\vcpkg\packages\libssh_x64-windows\lib\ -lssh
-INCLUDEPATH += C:\Users\USERNAME\vcpkg\packages\libssh_x64-windows\include
-DEPENDPATH += C:\Users\USERNAME\vcpkg\packages\libssh_x64-windows\include
+PRE_TARGETDEPS += C:\Users\m.y.pei\vcpkg\packages\libssh_x64-windows\lib\ssh.lib
+LIBS += -LC:\Users\m.y.pei\vcpkg\packages\libssh_x64-windows\lib\ -lssh
+INCLUDEPATH += C:\Users\m.y.pei\vcpkg\packages\libssh_x64-windows\include
+DEPENDPATH += C:\Users\m.y.pei\vcpkg\packages\libssh_x64-windows\include
 
-LIBS += -LC:\Users\USERNAME\vcpkg\packages\openssl_x64-windows\lib\ -llibcrypto -llibssl
-INCLUDEPATH += C:\Users\USERNAME\vcpkg\packages\openssl_x64-windows\include
-DEPENDPATH += C:\Users\USERNAME\vcpkg\packages\openssl_x64-windows\include
+LIBS += -LC:\Users\m.y.pei\vcpkg\packages\openssl_x64-windows\lib\ -llibcrypto -llibssl
+INCLUDEPATH += C:\Users\m.y.pei\vcpkg\packages\openssl_x64-windows\include
+DEPENDPATH += C:\Users\m.y.pei\vcpkg\packages\openssl_x64-windows\include

@@ -2,6 +2,7 @@
 #include "MainWindow.h"
 #include "ui_MainWindow.h"
 #include "ConfigSimulationDialog.h"
+#include "DirectorySettingsDialog.h"
 #include "Optimisation.h"
 #include "DebugOutput.h"
 #include "MeshDialog.h"
@@ -266,6 +267,12 @@ void MainWindow::on_actionCurrent_Optimisation_Settings_triggered()
         ConfigSimulationDialog diag(opt, this, false);
         diag.exec();
     }
+}
+
+void MainWindow::on_actionClusterDirectory_triggered()
+{
+    DirectorySettingsDialog diag(this);
+    diag.exec();
 }
 
 void MainWindow::on_actionVisualSettings_triggered()

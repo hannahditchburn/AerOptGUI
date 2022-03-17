@@ -52,6 +52,28 @@ private:
 };
 
 
+class clusterUpdate : public QThread
+{
+    Q_OBJECT
+public:
+    clusterUpdate();
+    ~clusterUpdate();
+    void setWorkingDirectory(std::string workDir);
+    void setClusterAddress(std::string address);
+    void setUsername(std::string username);
+    void setPassword(std::string password);
+signals:
+    void updatePerformed(const QString);
+private:
+    std::string mWorkingDirectory = "";
+    std::string mAddress = "";
+    std::string mUsername = "";
+    std::string mPassword = "";
+
+    void run();
+    int updateStatus();
+};
+
 ssh_session createSSHSession( std::string address, std::string username, std::string password );
 int sshVerifyPassword( QString address, QString username, QString password );
 

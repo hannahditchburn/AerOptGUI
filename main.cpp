@@ -24,17 +24,15 @@ void firstTimeSetup(QString AerOptWorkDir) {
     QSettings settings;
     settings.clear();
 
+    // Spaces in directory path mess with the MeshGenerator executable - have to exclude from AerOpt path.
     if(AerOptWorkDir.indexOf(' ') >= 0) {
-        QMessageBox::critical(nullptr, "Error", "Invalid Path: AerOpt executable path must not contains spaces.", QMessageBox::Ok);
+        QMessageBox::critical(nullptr, "Error", "Invalid Path: AerOpt executables will not function properly if path contains spaces. Please move to a directory without spaces in the path.", QMessageBox::Ok);
         exit(-1);
     }
 
     AerOptWorkDir = QDir::toNativeSeparators(AerOptWorkDir);
     settings.setValue("AerOpt/workingDirectory", AerOptWorkDir);
     QDir().mkdir(AerOptWorkDir);
-
-    QString exeLinkDir = QDir::toNativeSeparators(AerOptWorkDir + "Executables/");
-    QDir().mkdir(exeLinkDir);
 
     settings.setValue("AerOpt/startLoadPath", AerOptWorkDir);
 
@@ -55,7 +53,6 @@ void firstTimeSetup(QString AerOptWorkDir) {
 #endif
 
     bool copySuccess;
-    bool linkSuccess;
     bool exists = false;
 
     QString mesherExe = QDir::toNativeSeparators(exeDir + "MeshGenerator" + targetext);
@@ -181,6 +178,8 @@ void firstTimeSetup(QString AerOptWorkDir) {
     initialMeshFile = QDir::toNativeSeparators(initialMeshFile);
     settings.setValue("mesher/initMeshFile", initialMeshFile);
 
+    // Initial cluster settings - assume AerOpt cluster directory is /AerOpt/
+    settings.setValue("Cluster/AerOptDir", "AerOpt/");
     settings.setValue("Cluster/Username", "");
     settings.setValue("Cluster/Account", "scw1022");
     settings.setValue("Cluster/Address", "sunbird.swansea.ac.uk");
@@ -209,7 +208,6 @@ void checkSettings()
         firstTimeSetup(AerOptWorkDir);
     }
 
-    QString ext = ".exe";
     QString targetext = ".exe";
 #ifdef Q_OS_UNIX
         ext = ".unix";
@@ -234,6 +232,7 @@ void checkSettings()
     settingcheck &= (aeroptExe==QDir::fromNativeSeparators(settings.value("AerOpt/Executable").toString()));
     settingcheck &= (inFolder==QDir::fromNativeSeparators(settings.value("AerOpt/inFolder").toString()));
     settingcheck &= (scratchPath==QDir::fromNativeSeparators(settings.value("AerOpt/scratchDir").toString()));
+    settingcheck &= !(settings.value("Cluster/AerOptDir").toString().isEmpty());
     if(!settingcheck) {
         firstTimeSetup(AerOptWorkDir);
     }

@@ -39,7 +39,7 @@ private slots:
 
     void on_loadOptimisationButton_clicked();
     void on_actionCurrent_Optimisation_Settings_triggered();
-
+    void on_actionClusterDirectory_triggered();
     void on_actionVisualSettings_triggered();
 
     void on_actionShow_triggered();

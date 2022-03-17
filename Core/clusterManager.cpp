@@ -6,6 +6,8 @@
 #include <QFile>
 #include <QFileInfo>
 #include <QDateTime>
+#include <QMessageBox>
+#include <thread>
 
 clusterManager::clusterManager()
 {
@@ -46,12 +48,18 @@ int clusterManager::submitToCluster(){
     QSettings settings;
 
     ssh_session session = createSSHSession( mAddress, mUsername, mPassword );
-
+    if (session == NULL){
+        QMessageBox sshMsgBox;
+        sshMsgBox.setText("Error while setting up SSH connection.");
+        sshMsgBox.exec();
+        return -1;
+    }
+    else {
     std::string AerOptInFile = settings.value("AerOpt/inputFile").toString().toStdString();
     std::string AerOptNodeFile =  settings.value("AerOpt/nodeFile").toString().toStdString();
     std::string meshDatFile = settings.value("mesher/initMeshFile").toString().toStdString();
 
-    std::string clusterroot = "AerOpt/";
+    std::string clusterroot = settings.value("Cluster/AerOptDir").toString().toStdString();
     std::string clusterdir = clusterroot+mWorkingDirectory;
     std::string outputDirectory = mWorkingDirectory+"/Output_Data";
     std::string outputfilename = outputDirectory+"/output.log";
@@ -93,7 +101,7 @@ int clusterManager::submitToCluster(){
     // Add lines to script that execute time check loop.
     sshExecute(session, "cd "+clusterdir+"; echo 'while sleep "+wait+"; do TIME=`stat -c %y "+mWorkingDirectory+"/status.txt`' >> run.sh");
     sshExecute(session, "cd "+clusterdir+"; echo '  if [[ $TIME == $TIME2 ]]; then' >> run.sh");
-    sshExecute(session, "cd "+clusterdir+"; echo '      kill %1; break' >> run.sh");
+    sshExecute(session, "cd "+clusterdir+"; echo '      kill %1; echo Job killed due to lack of status updates from client in "+wait+" seconds. >> "+mWorkingDirectory+"/Output_Data/output.log; break'>> run.sh");
     sshExecute(session, "cd "+clusterdir+"; echo '  fi; TIME2=$TIME; ' >> run.sh");
     // Check within cluster loop that FitnessAll.txt exists, and whether Output_Data has files.
     sshExecute(session, "cd "+clusterdir+"; echo '  if test -f "+aeroptfitpath+"; then' >> run.sh");
@@ -107,6 +115,7 @@ int clusterManager::submitToCluster(){
 
     ssh_disconnect(session);
     ssh_free(session);
+    }
 
     return 0;
 }
@@ -124,7 +133,7 @@ void clusterManager::folderCheckLoop(){
     int line_number=0;
 
     // Build local filenames
-    std::string clusterdir = "AerOpt/" + mWorkingDirectory+"/";
+    std::string clusterdir = settings.value("Cluster/AerOptDir").toString().toStdString() + mWorkingDirectory+"/";
     outputFilename = mWorkingDirectory + "/Output_Data/output.log";    
     QString filePath = QString((localdirpath+outputFilename).c_str());
     QDir::toNativeSeparators(filePath);
@@ -145,7 +154,6 @@ void clusterManager::folderCheckLoop(){
         // Copy the folder over. This will only copy files if the time stamp or
         // file size have changed
         folderFromCluster(clusterdir+mWorkingDirectory, localdirpath+mWorkingDirectory);
-
         // Check for new lines in the outputfile and send them to the Optimisation
         std::ifstream outputfile(outputFilename);
         std::string line = "";
@@ -191,26 +199,85 @@ void clusterManager::folderCheckLoop(){
 
             fitness_file.close();
         }
-
-        // Perform status update to ensure AerOpt continues running on cluster.
-        ssh_session session = createSSHSession(mAddress, mUsername, mPassword);
-        sshExecute(session, "cd "+clusterdir+"; cd "+mWorkingDirectory+"; echo 'Folder checked.' >> status.txt");
-        ssh_disconnect(session);
-        ssh_free(session);
-
         sleep(5);
     }
 }
 
 
 void clusterManager::run(){
+    qInfo() << "Creating cluster update worker thread.";
+    clusterUpdate* updateWorker = new clusterUpdate();
+    updateWorker->setWorkingDirectory(mWorkingDirectory);
+    updateWorker->setUsername(mUsername);
+    updateWorker->setClusterAddress(mAddress);
+    updateWorker->setPassword(mPassword);
     // This will be run when the Qthread is started. Submit and start checking the folder
     if( submitToCluster()==0 ){
+        qInfo() << "Starting cluster update routine.";
+        updateWorker->start();
+        qInfo() << "Starting folder check loop.";
         folderCheckLoop();
+    }
+    updateWorker->quit();
+    updateWorker->~clusterUpdate();
+}
+
+clusterUpdate::clusterUpdate()
+{
+}
+
+clusterUpdate::~clusterUpdate()
+{
+}
+
+void clusterUpdate::setWorkingDirectory(std::string workDirString){
+    mWorkingDirectory = workDirString;
+}
+
+void clusterUpdate::setClusterAddress(std::string addressString){
+    mAddress = addressString;
+}
+
+void clusterUpdate::setUsername(std::string usernameString){
+    mUsername = usernameString;
+}
+
+void clusterUpdate::setPassword(std::string passwordString){
+    mPassword = passwordString;
+}
+
+void clusterUpdate::run()
+{
+    qInfo() << "Beginning cluster update loop.";
+    int updateSuccess = 0;
+    while (updateSuccess == 0) {
+        updateSuccess = updateStatus();
+    }
+    if (updateSuccess != 0) {
+        QMessageBox updateFailBox;
+        updateFailBox.setText("clusterUpdate thread encountered an error - cluster will terminate AerOpt once updates cease.");
+        updateFailBox.exec();
     }
 }
 
-
+int clusterUpdate::updateStatus(){
+    QSettings settings;
+    // Perform status update to ensure AerOpt continues running on cluster.
+    std::string clusterdir = settings.value("Cluster/AerOptDir").toString().toStdString()+mWorkingDirectory;
+    ssh_session session = createSSHSession(mAddress, mUsername, mPassword);
+    if (session == NULL)
+    {
+        qInfo() << "Error while setting up SSH session - unable to perform status update on cluster.";
+        return -1;
+    }
+    else {
+        sshExecute(session, "cd "+clusterdir+"; cd "+mWorkingDirectory+"; echo 'Folder checked.' >> status.txt");
+        ssh_disconnect(session);
+        ssh_free(session);
+        emit updatePerformed("Folder checked.");
+        return 0;
+    }
+}
 
 ssh_session createSSHSession( std::string address, std::string username, std::string password ){
     /* Create a new ssh session and log in. */
@@ -218,8 +285,8 @@ ssh_session createSSHSession( std::string address, std::string username, std::st
     ssh_session session = ssh_new();
     int rc;
     if (session == NULL) {
-        printf("Could not create session\n");
-        exit(-1);
+        printf("Could not create session.\n");
+        return NULL;
     }
 
     ssh_options_set(session, SSH_OPTIONS_HOST, address.c_str());
@@ -231,7 +298,7 @@ ssh_session createSSHSession( std::string address, std::string username, std::st
     {
       fprintf(stderr, "Error connecting to localhost: %s\n",
               ssh_get_error(session));
-      exit(-1);
+      return NULL;
     }
 
     return session;
@@ -245,8 +312,8 @@ ssh_channel createSSHChannel(ssh_session session){
 
     channel = ssh_channel_new(session);
     if (channel == NULL){
-        std::cout << "Error creating an ssh channel";
-        exit(-1);
+        std::cout << "Error creating an ssh channel.\n";
+        return NULL;
     }
     rc = ssh_channel_open_session(channel);
     if (rc != SSH_OK)
@@ -255,7 +322,7 @@ ssh_channel createSSHChannel(ssh_session session){
               ssh_get_error(session));
       ssh_channel_close(channel);
       ssh_channel_free(channel);
-      exit(-1);
+      return NULL;
     }
 
     return channel;
@@ -265,6 +332,10 @@ void sshExecute(ssh_session session, std::string command){
     /* Execute a command over ssh */
     int rc;
     ssh_channel channel = createSSHChannel(session);
+    if (channel == NULL) {
+        std::cout << "SSH channel could not be created - aborting command.\n";
+        return;
+    }
 
     rc = ssh_channel_request_exec(channel, command.c_str());
     if (rc != SSH_OK)
@@ -274,7 +345,7 @@ void sshExecute(ssh_session session, std::string command){
       std::cout << "Command: " << command << std::endl;
       ssh_channel_close(channel);
       ssh_channel_free(channel);
-      exit(-1);
+      return;
     }
     ssh_channel_close(channel);
     ssh_channel_free(channel);
@@ -292,7 +363,7 @@ sftp_session createSFTPSession(ssh_session session){
     {
       fprintf(stderr, "Error allocating SFTP session: %s\n",
               ssh_get_error(session));
-      exit(-1);
+      return NULL;
     }
 
     rc = sftp_init(sftp);
@@ -301,7 +372,7 @@ sftp_session createSFTPSession(ssh_session session){
       fprintf(stderr, "Error initializing SFTP session: %s.\n",
               sftp_get_error(sftp));
       sftp_free(sftp);
-      exit(-1);
+      return NULL;
     }
 
     return sftp;
@@ -319,7 +390,10 @@ int fileToCluster(std::string source, std::string destination, ssh_session sessi
     int fd;
 
     sftp = createSFTPSession(session);
-
+    if (sftp == NULL) {
+        std::cout << "Error creating SFTP session - aborting file copy to cluster.\n";
+        return -1;
+    }
     file = sftp_open(sftp, destination.c_str(), O_WRONLY | O_CREAT, S_IRUSR|S_IWUSR);
     if (file == NULL) {
         fprintf(stderr, "FileToCluster: Can't open file for reading: %s\n",
@@ -507,13 +581,23 @@ int clusterManager::folderFromCluster(std::string source, std::string destinatio
     sftp_session sftp;
 
     ssh_session session = createSSHSession(mAddress, mUsername, mPassword);
-    sftp = createSFTPSession(session);
+    if (session == NULL) {
+        std::cout << "Unable to connect with SSH - aborting folder copy from cluster.\n";
+        return -1;
+    }
+    else {
+        sftp = createSFTPSession(session);
+        if (sftp == NULL) {
+            std::cout << "Error creating SFTP session - aborting folder copy from cluster.\n";
+            return -1;
+        }
+        else {
+            getClusterFolder( source, destination, session, sftp);
 
-    getClusterFolder( source, destination, session, sftp);
-
-    ssh_disconnect(session);
-    ssh_free(session);
-
+            ssh_disconnect(session);
+            ssh_free(session);
+        }
+    }
     return 0;
 }
 
@@ -523,15 +607,26 @@ int clusterManager::fileFromCluster(std::string source, std::string destination)
     sftp_session sftp;
 
     ssh_session session = createSSHSession(mAddress, mUsername, mPassword);
-    sftp = createSFTPSession(session);
+    if (session == NULL) {
+        std::cout << "Unable to connect with SSH - aborting file copy from cluster.\n";
+        return -1;
+    }
+    else {
+        sftp = createSFTPSession(session);
+        if (sftp == NULL) {
+            std::cout << "Unable to create SFTP session - aborting file copy from cluster.\n";
+            return -1;
+        }
+        else {
 
-    QString filePath = QDir::toNativeSeparators(destination.c_str());
-    destination = filePath.toStdString();
-    getClusterFile( source, destination, session, sftp);
+            QString filePath = QDir::toNativeSeparators(destination.c_str());
+            destination = filePath.toStdString();
+            getClusterFile( source, destination, session, sftp);
 
-    ssh_disconnect(session);
-    ssh_free(session);
-
+            ssh_disconnect(session);
+            ssh_free(session);
+        }
+    }
     return 0;
 }
 
@@ -540,8 +635,8 @@ int sshVerifyPassword( QString address, QString username, QString password ){
     ssh_session session = ssh_new();
     int rc;
     if (session == NULL) {
-        fprintf(stderr, "Failed to create ssh session\n");
-        exit(-1);
+        fprintf(stderr, "Failed to create ssh session.\n");
+        return 3;
     }
 
     ssh_options_set(session, SSH_OPTIONS_HOST, address.toStdString().c_str());
@@ -549,14 +644,14 @@ int sshVerifyPassword( QString address, QString username, QString password ){
 
     rc = ssh_connect(session);
     if (rc != SSH_AUTH_SUCCESS) {
-      fprintf(stderr, "Failed to connect to the cluster\n");
-      exit(-1);
+      fprintf(stderr, "Failed to connect to the cluster.\n");
+      return 2;
     }
 
     rc = ssh_userauth_password(session, NULL, password.toStdString().c_str());
     if (rc != SSH_AUTH_SUCCESS)
     {
-      fprintf(stderr, "Authentication failed\n");
+      fprintf(stderr, "Authentication failed.\n");
       return 1;
     }
 
