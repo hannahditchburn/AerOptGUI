@@ -520,8 +520,8 @@ bool Mesh::createBacFile(const std::string& meshBacFile)
                 outfile << "    1.0  0.0   0.07  0.4  0.6" << std::endl;//<< medium
                 break;
             case Enum::Mesh::FINE :
-                outfile << "    0.0  0.0   0.02  0.3  0.7" << std::endl;//<< fine
-                outfile << "    1.0  0.0   0.02  0.3  0.7" << std::endl;//<< fine
+                outfile << "    0.0  0.0   0.01  0.3  0.7" << std::endl;//<< fine
+                outfile << "    1.0  0.0   0.01  0.3  0.7" << std::endl;//<< fine
                 break;
             default :
                 outfile << "    0.0  0.0   0.15  0.4  0.6" << std::endl;//<< course
