@@ -505,8 +505,12 @@ bool Mesh::createBacFile(const std::string& meshBacFile)
         outfile << "  1    1   2   3" << std::endl;
         outfile << "  2    1   3   4" << std::endl;
         outfile << "  sources" << std::endl;
-        outfile << "  0  1	 0" << std::endl;
+        outfile << "  2  1	 0" << std::endl;
         outfile << "  point" << std::endl;
+        outfile << "leading edge" << std::endl;
+        outfile << "   0.0  0.0   0.005  0.05  0.1" << std::endl;
+        outfile << "trailing edge" << std::endl;
+        outfile << "   1.0  0.0   0.005  0.05  0.1" << std::endl;
         outfile << "  line" << std::endl;
         outfile << "InnerRadius" << std::endl;
         switch (meshDensity())
@@ -520,8 +524,8 @@ bool Mesh::createBacFile(const std::string& meshBacFile)
                 outfile << "    1.0  0.0   0.07  0.4  0.6" << std::endl;//<< medium
                 break;
             case Enum::Mesh::FINE :
-                outfile << "    0.0  0.0   0.01  0.3  0.7" << std::endl;//<< fine
-                outfile << "    1.0  0.0   0.01  0.3  0.7" << std::endl;//<< fine
+                outfile << "    0.0  0.0   0.02  0.3  0.7" << std::endl;//<< fine
+                outfile << "    1.0  0.0   0.02  0.3  0.7" << std::endl;//<< fine
                 break;
             default :
                 outfile << "    0.0  0.0   0.15  0.4  0.6" << std::endl;//<< course
