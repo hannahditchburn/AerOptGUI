@@ -507,10 +507,7 @@ bool Mesh::createBacFile(const std::string& meshBacFile)
         outfile << "  sources" << std::endl;
         outfile << "  2  1	 0" << std::endl;
         outfile << "  point" << std::endl;
-        outfile << "leading edge" << std::endl;
-        outfile << "   0.0  0.0   0.005  0.05  0.1" << std::endl;
-        outfile << "trailing edge" << std::endl;
-        outfile << "   1.0  0.0   0.005  0.05  0.1" << std::endl;
+        if //specify mesh condition
         outfile << "  line" << std::endl;
         outfile << "InnerRadius" << std::endl;
         switch (meshDensity())
@@ -531,6 +528,7 @@ bool Mesh::createBacFile(const std::string& meshBacFile)
                 outfile << "    0.0  0.0   0.15  0.4  0.6" << std::endl;//<< course
                 outfile << "    1.0  0.0   0.15  0.4  0.6" << std::endl;//<< course
         }
+        end if //edit if statement
         outfile << " 0 " << std::endl;
         outfile << " 0 " << std::endl;
     }
