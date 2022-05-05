@@ -504,9 +504,31 @@ bool Mesh::createBacFile(const std::string& meshBacFile)
         outfile << "      0.100000E+01  2.500000E+01  2.500000E+01  0.100000E+01  0.100000E+01" << std::endl;
         outfile << "  1    1   2   3" << std::endl;
         outfile << "  2    1   3   4" << std::endl;
-        outfile << "  sources" << std::endl;
-        outfile << "  2  1	 0" << std::endl;
-        outfile << "  point" << std::endl;
+        switch (meshDensity())
+        {
+            case Enum::Mesh::COARSE :
+                outfile << "  sources" << std::endl;
+                outfile << "  0  1	 0" << std::endl;
+                outfile << "  point" << std::endl;
+                break;
+            case Enum::Mesh::MEDIUM :
+                outfile << "  sources" << std::endl;
+                outfile << "  0  1	 0" << std::endl;
+                outfile << "  point" << std::endl;
+                break;
+            case Enum::Mesh::FINE :
+                outfile << "  sources" << std::endl;
+                outfile << "  2  1	 0" << std::endl;
+                outfile << "  point" << std::endl;
+                outfile << "LeadingEdge" << std::endl;
+                outfile << "    0.0  0.0   0.005  0.05  0.1" << std::endl;//<< point source
+                outfile << "TrailingEdge" << std::endl;
+                outfile << "    1.0  0.0   0.005  0.05  0.1" << std::endl;//<< point source
+                break;
+            default :
+                outfile << "    0.0  0.0   0.15  0.4  0.6" << std::endl;//<< coarse
+                outfile << "    1.0  0.0   0.15  0.4  0.6" << std::endl;//<< coarse
+        }
         outfile << "  line" << std::endl;
         outfile << "InnerRadius" << std::endl;
         switch (meshDensity())
