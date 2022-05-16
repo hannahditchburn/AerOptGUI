@@ -66,7 +66,7 @@ int clusterManager::submitToCluster(){
     std::string simulationdir = clusterdir+"/"+mWorkingDirectory;
 
     // Status checker parameters:
-    int clusterwait = 60;
+    int clusterwait = settings.value("Cluster/WaitTime").toInt();
     std::string wait = std::to_string(clusterwait);
 
     // Delete any conflicting directory and create the new one
@@ -131,6 +131,7 @@ void clusterManager::folderCheckLoop(){
     std::string fitnessFilename;
     std::string localFolder;
     int line_number=0;
+    int checktime = settings.value("Cluster/CheckTime").toInt();
 
     // Build local filenames
     std::string clusterdir = settings.value("Cluster/AerOptDir").toString().toStdString() + mWorkingDirectory+"/";
@@ -199,7 +200,9 @@ void clusterManager::folderCheckLoop(){
 
             fitness_file.close();
         }
-        sleep(5);
+        QDateTime time = QDateTime::currentDateTime();
+        qInfo() << "Remote folder checked for files at " << time.toString() << ".";
+        sleep(checktime);
     }
 }
 
@@ -248,10 +251,13 @@ void clusterUpdate::setPassword(std::string passwordString){
 
 void clusterUpdate::run()
 {
+    QSettings settings;
+    int updatetime = settings.value("Cluster/UpdateTime").toInt();
     qInfo() << "Beginning cluster update loop.";
     int updateSuccess = 0;
     while (updateSuccess == 0) {
         updateSuccess = updateStatus();
+        sleep(updatetime);
     }
     if (updateSuccess != 0) {
         QMessageBox updateFailBox;
@@ -260,9 +266,11 @@ void clusterUpdate::run()
     }
 }
 
-int clusterUpdate::updateStatus(){
+int clusterUpdate::updateStatus()
+{
     QSettings settings;
     // Perform status update to ensure AerOpt continues running on cluster.
+    QDateTime time = QDateTime::currentDateTime();
     std::string clusterdir = settings.value("Cluster/AerOptDir").toString().toStdString()+mWorkingDirectory;
     ssh_session session = createSSHSession(mAddress, mUsername, mPassword);
     if (session == NULL)
@@ -271,10 +279,10 @@ int clusterUpdate::updateStatus(){
         return -1;
     }
     else {
-        sshExecute(session, "cd "+clusterdir+"; cd "+mWorkingDirectory+"; echo 'Folder checked.' >> status.txt");
+        sshExecute(session, "cd "+clusterdir+"; cd "+mWorkingDirectory+"; echo 'Folder checked at "+time.toString().toStdString()+".' >> status.txt");
         ssh_disconnect(session);
         ssh_free(session);
-        emit updatePerformed("Folder checked.");
+        emit updatePerformed("Folder checked at " + time.toString() + ".");
         return 0;
     }
 }

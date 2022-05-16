@@ -75,10 +75,16 @@ private:
 };
 
 ssh_session createSSHSession( std::string address, std::string username, std::string password );
+ssh_channel createSSHChannel(ssh_session session);
+sftp_session createSFTPSession(ssh_session session);
+
 int sshVerifyPassword( QString address, QString username, QString password );
 
 void sshExecute(ssh_session session, std::string command);
-int fileToCluster(std::string source, std::string destination, ssh_session session);
 
+int fileToCluster(std::string source, std::string destination, ssh_session session);
+int getClusterFile(std::string source, std::string destination, ssh_session session, sftp_session sftp);
+int getClusterFolder(std::string source, std::string destination, ssh_session session, sftp_session sftp);
+int downloadAndVerifyClusterFile(std::string source, std::string destination, int size, ssh_session session, sftp_session sftp);
 
 #endif // clusterManager_H
