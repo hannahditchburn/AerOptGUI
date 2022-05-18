@@ -18,7 +18,6 @@
 #include "Optimisation.h"
 #include "OptimisationModel.h"
 #include "FileManipulation.h"
-#include <QMessageBox>
 
 Optimisation::Optimisation() :
     mInitMesh(new Mesh()),
@@ -318,56 +317,20 @@ bool Optimisation::run() {
     bool r = true;
 
     //Empty the input directory
-    bool empty_ok = FileManipulation::emptyFolder(inFolder);
-    QString empty_status = "Input folder issue: ";
-    if (!empty_ok)
-    {
-        qInfo() << "Unable to empty input folder.";
-        empty_status += "x";
-    }
+    r &= FileManipulation::emptyFolder(inFolder);
 
     //Copy mesh file as input to AerOpt from project directory to input directory
     QString dest = QDir::toNativeSeparators(inFolder + "/Mesh.dat");
-    bool copy_ok = FileManipulation::copyFile(meshDatFile, dest);
-    QString copy_status = "Mesh file copying issue: ";
-    if (!copy_ok)
-    {
-        qInfo() << "Unable to copy mesh file to input directory.";
-        copy_status += "x";
-    }
+    r &= FileManipulation::copyFile(meshDatFile, dest);
 
     //Set input files in input directory
-    bool input_ok = createAerOptInFile(AerOptInFile);
-    QString input_status = "Input file creation issue: ";
-    if (!input_ok)
-    {
-        qInfo() << "Unable to create AerOpt input file.";
-        input_status += "x";
+    r &= createAerOptInFile(AerOptInFile);
+    r &= createAerOptNodeFile(AerOptNodeFile);
+    r &= createAerOptBoundaryPointFile(AerOptBoundaryFile);
 
-    }
-    bool node_ok = createAerOptNodeFile(AerOptNodeFile);
-    QString node_status = "Node file creation issue: ";
-    if (!node_ok)
-    {
-        qInfo() << "Unable to create AerOpt node file.";
-        node_status += "x";
-    }
-    bool bound_ok = createAerOptBoundaryPointFile(AerOptBoundaryFile);
-    QString bound_status = "Boundary point file creation issue: ";
-    if (!bound_ok)
-    {
-        qInfo() << "Unable to create AerOpt boundary point file.";
-        bound_status += "x";
-    }
     // Set loadFolder to outputDataDirectory
     settings.setValue("AerOpt/loadFolder",simulationDirectoryPath());
 
-    // Check all prerequisites.
-    r &= empty_ok;
-    r &= copy_ok;
-    r &= input_ok;
-    r &= node_ok;
-    r &= bound_ok;
     //then run aeropt
     if (r)
     {
@@ -396,12 +359,8 @@ bool Optimisation::run() {
         writeProfilePointsToSimulationDir();
     }
     else
-    {   
-        QMessageBox optfailmsgBox;
-        optfailmsgBox.setText("Optimisation setup has failed - process will be aborted.");
-        optfailmsgBox.setInformativeText(empty_status + "\n" + copy_status + "\n" + input_status
-                                         + "\n" + node_status +"\n" + bound_status);
-        optfailmsgBox.exec();
+    {
+        qWarning() << "Process Aborted!";
     }
 
     return r;

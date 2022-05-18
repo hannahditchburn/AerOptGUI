@@ -200,8 +200,6 @@ void clusterManager::folderCheckLoop(){
 
             fitness_file.close();
         }
-        QDateTime time = QDateTime::currentDateTime();
-        qInfo() << "Remote folder checked for files at " << time.toString() << ".";
         sleep(checktime);
     }
 }
@@ -270,7 +268,6 @@ int clusterUpdate::updateStatus()
 {
     QSettings settings;
     // Perform status update to ensure AerOpt continues running on cluster.
-    QDateTime time = QDateTime::currentDateTime();
     std::string clusterdir = settings.value("Cluster/AerOptDir").toString().toStdString()+mWorkingDirectory;
     ssh_session session = createSSHSession(mAddress, mUsername, mPassword);
     if (session == NULL)
@@ -279,10 +276,10 @@ int clusterUpdate::updateStatus()
         return -1;
     }
     else {
-        sshExecute(session, "cd "+clusterdir+"; cd "+mWorkingDirectory+"; echo 'Folder checked at "+time.toString().toStdString()+".' >> status.txt");
+        sshExecute(session, "cd "+clusterdir+"; cd "+mWorkingDirectory+"; echo 'Folder checked.' >> status.txt");
         ssh_disconnect(session);
         ssh_free(session);
-        emit updatePerformed("Folder checked at " + time.toString() + ".");
+        emit updatePerformed("Folder checked.");
         return 0;
     }
 }

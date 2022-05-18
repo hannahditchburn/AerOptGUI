@@ -37,7 +37,7 @@ void DirectorySettingsDialog::accept()
     int waittime = ui->waittime->value();
     int checktime = ui->checktime->value();
     int updatetime = ui->updatetime->value();
-    ok &= (waittime > updatetime);
+    ok &= (waittime < updatetime);
     if(!ok)
     {
         QMessageBox timemsgBox;
@@ -55,7 +55,7 @@ void DirectorySettingsDialog::accept()
         return;
     }
     // Check for spaces in path.
-    ok &= (workdir.indexOf(' ') == 0);
+    ok &= (workdir.indexOf(' ') >= 0);
     if(!ok)
     {
         QMessageBox spacemsgBox;
