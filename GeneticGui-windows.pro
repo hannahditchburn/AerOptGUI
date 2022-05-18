@@ -147,11 +147,11 @@ INCLUDEPATH += \
 RESOURCES += \
     Resourses.qrc
 
-PRE_TARGETDEPS += C:\Users\USERNAME\vcpkg\packages\libssh_x64-windows\lib\ssh.lib
-LIBS += -LC:\Users\USERNAME\vcpkg\packages\libssh_x64-windows\lib\ -lssh
-INCLUDEPATH += C:\Users\USERNAME\vcpkg\packages\libssh_x64-windows\include
-DEPENDPATH += C:\Users\USERNAME\vcpkg\packages\libssh_x64-windows\include
+PRE_TARGETDEPS += C:\Users\hanna\vcpkg\packages\libssh_x64-windows\lib\ssh.lib
+LIBS += -LC:\Users\hanna\vcpkg\packages\libssh_x64-windows\lib\ -lssh
+INCLUDEPATH += C:\Users\hanna\vcpkg\packages\libssh_x64-windows\include
+DEPENDPATH += C:\Users\hanna\vcpkg\packages\libssh_x64-windows\include
 
-LIBS += -LC:\Users\USERNAME\vcpkg\packages\openssl_x64-windows\lib\ -llibcrypto -llibssl
-INCLUDEPATH += C:\Users\USERNAME\vcpkg\packages\openssl_x64-windows\include
-DEPENDPATH += C:\Users\USERNAME\vcpkg\packages\openssl_x64-windows\include
+LIBS += -LC:\Users\hanna\vcpkg\packages\openssl_x64-windows\lib\ -llibcrypto -llibssl
+INCLUDEPATH += C:\Users\hanna\vcpkg\packages\openssl_x64-windows\include
+DEPENDPATH += C:\Users\hanna\vcpkg\packages\openssl_x64-windows\include

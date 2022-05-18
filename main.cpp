@@ -181,7 +181,7 @@ void firstTimeSetup(QString AerOptWorkDir) {
     // Initial cluster settings - assume AerOpt cluster directory is /AerOpt/
     settings.setValue("Cluster/AerOptDir", "AerOpt/");
     settings.setValue("Cluster/Username", "");
-    settings.setValue("Cluster/Account", "scw1022");
+    settings.setValue("Cluster/Account", "scw1863");
     settings.setValue("Cluster/Address", "sunbird.swansea.ac.uk");
     // Cluster interaction settings
     settings.setValue("Cluster/WaitTime", "60");
