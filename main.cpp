@@ -183,6 +183,10 @@ void firstTimeSetup(QString AerOptWorkDir) {
     settings.setValue("Cluster/Username", "");
     settings.setValue("Cluster/Account", "scw1863");
     settings.setValue("Cluster/Address", "sunbird.swansea.ac.uk");
+    // Cluster interaction settings
+    settings.setValue("Cluster/WaitTime", "60");
+    settings.setValue("Cluster/UpdateTime", "10");
+    settings.setValue("Cluster/CheckTime", "60");
 }
 
 void checkSettings()
