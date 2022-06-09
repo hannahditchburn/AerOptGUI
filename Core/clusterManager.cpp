@@ -41,11 +41,74 @@ void clusterManager::setRunDateTime(){
     settings.setValue("runDate",time.toString("yyMMdd"));
 }
 
+bool clusterManager::createShellScript(const QString& filePath){
+    bool r = true;
+    QSettings settings;
+    std::ofstream outfile(filePath.toStdString(), std::ofstream::out);
+    r &= outfile.is_open();
+
+    // Status checker parameters:
+    int clusterwait = settings.value("Cluster/WaitTime").toInt();
+    std::string wait = std::to_string(clusterwait);
+
+    // Log the date and time to aid loading files from cluster.
+    setRunDateTime(); // Might have marginal failures if the script runs at a different time.
+    QString datestr = settings.value("runDate").toString();
+    QString timestr = settings.value("runTime").toString();
+    std::string aeroptdir = "AerOpt2D_3.5_"+datestr.toStdString()+"_"+timestr.toStdString();
+    std::string aeroptoutdir = aeroptdir+"/Output_Data/";
+    std::string aeroptfitpath = aeroptdir+"/FitnessAll.txt";
+
+    std::string clusterroot = settings.value("Cluster/AerOptDir").toString().toStdString();
+    std::string clusterdir = clusterroot+mWorkingDirectory;
+    std::string outputDirectory = mWorkingDirectory+"/Output_Data";
+    std::string outputfilename = outputDirectory+"/output.log";
+    std::string simulationdir = clusterdir+"/"+mWorkingDirectory;
+
+    std::string localFolder;
+    if (r)
+    {
+        qInfo() << "Writing local copy of shell script to " << filePath;
+        outfile << "module load mkl" << std::endl;
+        outfile << "./AerOpt 2>&1 > " << outputfilename << " &" << std::endl;
+        outfile << "while sleep " << wait << "; do TIME=`stat -c %y " << mWorkingDirectory << "/status.txt`" << std::endl;
+        outfile << "  if [[ $TIME == $TIME2 ]]; then" << std::endl;
+        outfile << "    kill %1; echo Job killed due to lack of status updates from client in " << wait << " seconds. >> " << mWorkingDirectory << "/Output_Data/output.log; break" << std::endl;
+        outfile << "  fi; TIME2=$TIME;" << std::endl;
+        outfile << "  for textfile in " << aeroptdir << "/*.txt; do" << std::endl;
+        outfile << "    if test -f $textfile; then" << std::endl;
+        outfile << "      cp $textfile " << mWorkingDirectory << "/." << std::endl;
+        outfile << "    fi;" << std::endl << "  done; " << std::endl << "  if test -d " << aeroptoutdir << "; then" << std::endl;
+        outfile << "    cp -r " << aeroptoutdir << " " << mWorkingDirectory << "/." << std::endl;
+        outfile << "  fi" << std::endl << "done" << std::endl;
+    }
+    else
+    {
+        qInfo() << "Unable to locally create a shell script.";
+    }
+    return r;
+}
+
 int clusterManager::submitToCluster(){
     /* Submit a run to the cluster. Copies necessary input files over, creates a full
      * copy of the AerOpt folder on the cluster (currently just assuming its at ~/AerOpt)
      * and starts AerOpt in a screen. */
     QSettings settings;
+
+    // Write copy of shell script locally.
+    QString shellPath = QDir::toNativeSeparators(settings.value("AerOpt/workingDirectory").toString() + QString(mWorkingDirectory.c_str()) + "/run.sh");
+    createShellScript(shellPath);
+
+    std::string AerOptInFile = settings.value("AerOpt/inputFile").toString().toStdString();
+    std::string AerOptNodeFile =  settings.value("AerOpt/nodeFile").toString().toStdString();
+    std::string meshDatFile = settings.value("mesher/initMeshFile").toString().toStdString();
+    std::string scriptFile = shellPath.toStdString();
+
+    std::string clusterroot = settings.value("Cluster/AerOptDir").toString().toStdString();
+    std::string clusterdir = clusterroot+mWorkingDirectory;
+    std::string outputDirectory = mWorkingDirectory+"/Output_Data";
+    std::string outputfilename = outputDirectory+"/output.log";
+    std::string simulationdir = clusterdir+"/"+mWorkingDirectory;
 
     ssh_session session = createSSHSession( mAddress, mUsername, mPassword );
     if (session == NULL){
@@ -55,20 +118,6 @@ int clusterManager::submitToCluster(){
         return -1;
     }
     else {
-    std::string AerOptInFile = settings.value("AerOpt/inputFile").toString().toStdString();
-    std::string AerOptNodeFile =  settings.value("AerOpt/nodeFile").toString().toStdString();
-    std::string meshDatFile = settings.value("mesher/initMeshFile").toString().toStdString();
-
-    std::string clusterroot = settings.value("Cluster/AerOptDir").toString().toStdString();
-    std::string clusterdir = clusterroot+mWorkingDirectory;
-    std::string outputDirectory = mWorkingDirectory+"/Output_Data";
-    std::string outputfilename = outputDirectory+"/output.log";
-    std::string simulationdir = clusterdir+"/"+mWorkingDirectory;
-
-    // Status checker parameters:
-    int clusterwait = settings.value("Cluster/WaitTime").toInt();
-    std::string wait = std::to_string(clusterwait);
-
     // Delete any conflicting directory and create the new one
     sshExecute(session, "rm -r "+clusterdir);
     sshExecute(session, "mkdir -p "+clusterdir+"/"+outputDirectory);
@@ -86,40 +135,16 @@ int clusterManager::submitToCluster(){
     sshExecute(session, "cd "+clusterdir+"; cp ../AerOpt ./");
     sshExecute(session, "cd "+clusterdir+"; cp -r ../Executables ../executables ./");
 
-    // Log the date and time to aid loading files from cluster.
-    setRunDateTime(); // Might have marginal failures if the script runs at a different time.
-    QString datestr = settings.value("runDate").toString();
-    QString timestr = settings.value("runTime").toString();
-    std::string aeroptdir = "AerOpt2D_3.5_"+datestr.toStdString()+"_"+timestr.toStdString();
-    std::string aeroptoutdir = aeroptdir+"/Output_Data/";
-    std::string aeroptfitpath = aeroptdir+"/FitnessAll.txt";
-
-    // Create a run script and start it in screen
-    sshExecute(session, "cd "+clusterdir+"; echo module load mkl > run.sh");
-    // Background AerOpt so the bash script can monitor status.txt for changes.
-    sshExecute(session, "cd "+clusterdir+"; echo './AerOpt 2>&1 > "+outputfilename+" &' >> run.sh");
-    // Add lines to script that execute time check loop.
-    sshExecute(session, "cd "+clusterdir+"; echo 'while sleep "+wait+"; do TIME=`stat -c %y "+mWorkingDirectory+"/status.txt`' >> run.sh");
-    sshExecute(session, "cd "+clusterdir+"; echo '  if [[ $TIME == $TIME2 ]]; then' >> run.sh");
-    sshExecute(session, "cd "+clusterdir+"; echo '      kill %1; echo Job killed due to lack of status updates from client in "+wait+" seconds. >> "+mWorkingDirectory+"/Output_Data/output.log; break'>> run.sh");
-    sshExecute(session, "cd "+clusterdir+"; echo '  fi; TIME2=$TIME; ' >> run.sh");
-    // Check within cluster loop that FitnessAll.txt exists, and whether Output_Data has files.
-    sshExecute(session, "cd "+clusterdir+"; echo '  if test -f "+aeroptfitpath+"; then' >> run.sh");
-    sshExecute(session, "cd "+clusterdir+"; echo '      cp "+aeroptfitpath+" "+mWorkingDirectory+"/.' >> run.sh");
-    sshExecute(session, "cd "+clusterdir+"; echo '  fi; if test -d "+aeroptoutdir+"; then' >> run.sh");
-    sshExecute(session, "cd "+clusterdir+"; echo '      cp -r "+aeroptoutdir+" "+mWorkingDirectory+"/.' >> run.sh");
-    sshExecute(session, "cd "+clusterdir+"; echo '  fi' >> run.sh");
-    sshExecute(session, "cd "+clusterdir+"; echo 'done' >> run.sh");
+    // Upload the script, set permissions and execute the run script.
+    fileToCluster(scriptFile.c_str(),clusterdir+"/run.sh",session);
     sshExecute(session, "cd "+clusterdir+"; chmod +x run.sh");
     sshExecute(session, "cd "+clusterdir+"; screen -L -d -m ./run.sh ");
 
     ssh_disconnect(session);
     ssh_free(session);
     }
-
     return 0;
 }
-
 
 void clusterManager::folderCheckLoop(){
     /* Copy the folder back from the cluster and check for changes in a loop.
@@ -205,7 +230,6 @@ void clusterManager::folderCheckLoop(){
         sleep(checktime);
     }
 }
-
 
 void clusterManager::run(){
     qInfo() << "Creating cluster update worker thread.";

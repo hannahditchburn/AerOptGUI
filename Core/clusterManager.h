@@ -45,6 +45,7 @@ private:
     void run();
     void folderCheckLoop();
     int submitToCluster();
+    bool createShellScript(const QString& filePath);
 
     int folderFromCluster(std::string source, std::string destination);
     int fileFromCluster(std::string source, std::string destination);
