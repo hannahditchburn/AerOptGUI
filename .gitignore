@@ -17,3 +17,7 @@ FLITE/Output_Data/
 FLITE/*.txt
 FLITE/*.bat
 FLITE/*.scr
+Testing/sshd_out.log
+Testing/target_wrapper.sh
+Testing/fake-ssh-home/
+Testing/DownloadTesting/

@@ -1,5 +1,5 @@
 #include "clusterManager.h"
-#include <FileManipulation.h>
+#include "FileManipulation.h"
 #include <QDebug>
 #include <QSettings>
 #include <QDir>
