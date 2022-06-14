@@ -251,3 +251,9 @@ When you compile the program, an executable called `AerOptGui.exe` is created in
 Download the [zip archive](https://github.com/rantahar/AerOpt-gui/releases/download/0.2/AerOptGui.zip) and extract it.
 The folder contains everything AerOptGui needs to run.
 Replace `AerOptGui.exe` with the newly compiled executable and it should work directly.
+
+## Running tests
+
+Some cluster communication functions have tests associated with them. These tests are compiled and run in a separate standalone executable. The project file `AerOptGuiTesting.pro` can be opened in Qt Creator to configure and compile this executable. The tests create an SSH connection to `localhost` and requires your machine to have `sshd` set up. Windows users can find guidance in the official [Microsoft documentation](https://docs.microsoft.com/en-us/windows-server/administration/openssh/openssh_install_firstuse) (Windows 10 and onward), or if you have Git for Windows installed with OpenSSH, you can add a host key for the SSH server with `ssh-keygen -f /etc/ssh/ssh_host_rsa_key -t rsa` in Git Bash. Note that if you have attempted to SSH into `localhost` by other means, you may be prompted with a warning that the keys have changed - in this case you can check `~/.ssh/known_hosts` and remove the old mentions of `localhost`.
+
+The tests will require a correct username and password for your local machine in `Testing/clusterTester`, as well as correct locations for the OpenSSH and OpenSSL libraries in `AerOptGuiTesting.pro`. You may also need to copy some DLLs into the Testing folder for the executable to run properly. The testing will generate some small directories and files in order to test the functionality of various functions offered by the `clusterManager` class, specifically `getClusterFolder`, `sshExecute`, `createSSHsession` and `sshVerifyPassword`.
