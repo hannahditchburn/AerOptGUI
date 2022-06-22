@@ -66,7 +66,7 @@ int clusterManager::submitToCluster(){
     std::string simulationdir = clusterdir+"/"+mWorkingDirectory;
 
     // Status checker parameters:
-    int clusterwait = 600;
+    int clusterwait = 3600;
     std::string wait = std::to_string(clusterwait);
 
     // Delete any conflicting directory and create the new one
