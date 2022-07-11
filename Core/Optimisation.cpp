@@ -490,7 +490,7 @@ bool Optimisation::createAerOptInFile(const QString& filePath)
         outfile << "IV%constrain = .True." << std::endl;
         outfile << "IV%AdaptSamp = .FALSE." << std::endl;
         outfile << "IV%waitMax = 48" << std::endl;
-        outfile << "IV%maxit = 50000" << std::endl;
+        outfile << "IV%maxit = 100000" << std::endl;
         outfile << "IV%Aconst = 0.01" << std::endl;
         outfile << "IV%POD = .false." << std::endl;
         outfile << "IV%NoDelBP = 4" << std::endl;
