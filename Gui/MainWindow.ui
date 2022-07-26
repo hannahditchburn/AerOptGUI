@@ -453,7 +453,7 @@
   </action>
   <action name="actionClusterDirectory">
    <property name="text">
-    <string>File settings...</string>
+    <string>Directories...</string>
    </property>
   </action>
  </widget>
