@@ -131,7 +131,6 @@ void clusterManager::folderCheckLoop(){
     std::string fitnessFilename;
     std::string localFolder;
     int line_number=0;
-    int checktime = settings.value("Cluster/CheckTime").toInt();
 
     // Build local filenames
     std::string clusterdir = settings.value("Cluster/AerOptDir").toString().toStdString() + mWorkingDirectory+"/";
@@ -200,9 +199,13 @@ void clusterManager::folderCheckLoop(){
 
             fitness_file.close();
         }
+<<<<<<< HEAD
         QDateTime time = QDateTime::currentDateTime();
         qInfo() << "Remote folder checked for files at " << time.toString() << ".";
         sleep(checktime);
+=======
+        sleep(5);
+>>>>>>> parent of da65a42 (Revert "Revert "Added adjustable cluster communication intervals"")
     }
 }
 
@@ -251,13 +254,10 @@ void clusterUpdate::setPassword(std::string passwordString){
 
 void clusterUpdate::run()
 {
-    QSettings settings;
-    int updatetime = settings.value("Cluster/UpdateTime").toInt();
     qInfo() << "Beginning cluster update loop.";
     int updateSuccess = 0;
     while (updateSuccess == 0) {
         updateSuccess = updateStatus();
-        sleep(updatetime);
     }
     if (updateSuccess != 0) {
         QMessageBox updateFailBox;
@@ -266,8 +266,7 @@ void clusterUpdate::run()
     }
 }
 
-int clusterUpdate::updateStatus()
-{
+int clusterUpdate::updateStatus(){
     QSettings settings;
     // Perform status update to ensure AerOpt continues running on cluster.
     QDateTime time = QDateTime::currentDateTime();

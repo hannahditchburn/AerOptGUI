@@ -13,14 +13,7 @@ DirectorySettingsDialog::DirectorySettingsDialog(QWidget *parent) :
     QString mLocalDirectory = settings.value("AerOpt/workingDirectory").toString();
     ui->setupUi(this);
     ui->clusterdir->setText(mClusterDirectory);
-    ui->localdir->setText(mLocalDirectory);    
-    ui->waittime->setValue(settings.value("Cluster/WaitTime").toInt());
-    ui->checktime->setValue(settings.value("Cluster/CheckTime").toInt());
-    ui->updatetime->setValue(settings.value("Cluster/UpdateTime").toInt());
-    // Set minimum of 5 seconds on checktime, 15 on wait time and 5 on update time.
-    ui->waittime->setMinimum(15);
-    ui->checktime->setMinimum(5);
-    ui->updatetime->setMinimum(5);
+    ui->localdir->setText(mLocalDirectory);
 }
 
 DirectorySettingsDialog::~DirectorySettingsDialog()
@@ -32,6 +25,7 @@ void DirectorySettingsDialog::accept()
 {
     QSettings settings;
 
+<<<<<<< HEAD
     bool ok = true; // Perform checks on inputs before committing.
     // Check that the client updates fast enough for the cluster to keep AerOpt alive.
     int waittime = ui->waittime->value();
@@ -45,13 +39,16 @@ void DirectorySettingsDialog::accept()
         timemsgBox.exec();
         return;
     }
+=======
+    settings.setValue("Cluster/AerOptDir", ui->clusterdir->text());
+>>>>>>> parent of da65a42 (Revert "Revert "Added adjustable cluster communication intervals"")
     // Check for presence of specified directory.
     QString workdir = QDir::toNativeSeparators(QDir::cleanPath(ui->localdir->text()));
-    ok &= QDir(workdir).exists();
-    if (!ok){
+    if (!QDir(workdir).exists()){
         QMessageBox dirmsgBox;
         dirmsgBox.setText("Could not find specified local working directory. Please check the path and try again.");
         dirmsgBox.exec();
+<<<<<<< HEAD
         return;
     }
     // Check for spaces in path.
@@ -72,6 +69,19 @@ void DirectorySettingsDialog::accept()
         settings.setValue("Cluster/UpdateTime", updatetime);
         QDialog::accept();
         return;
+=======
+    } else {
+        if(workdir.indexOf(' ') >= 0) {
+            QMessageBox spacemsgBox;
+            spacemsgBox.setText("Invalid Path: AerOpt executables will not function properly if path contains spaces. Please specify a directory without spaces in the path.");
+            spacemsgBox.exec();
+        }
+        else
+        {
+            DirectorySetup(workdir);
+            QDialog::accept();
+        }
+>>>>>>> parent of da65a42 (Revert "Revert "Added adjustable cluster communication intervals"")
     }
 }
 
