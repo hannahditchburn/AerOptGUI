@@ -21,7 +21,6 @@ namespace Enum
 	enum ObjFunc
 	{
         LIFTDRAG,           // Lift-Drag Ratio
-        // DISTORTION,         // function not needed
         MAXLIFT,            // Maximise Lift
         MINDRAG,            // Minimise Drag
         MAXDOWNFORCE,       // Maximise Downforce
