@@ -20,13 +20,13 @@ namespace Enum
      */
 	enum ObjFunc
 	{
-        FUNCNOTSET,         // No setting selected
         LIFTDRAG,           // Lift-Drag Ratio
-        DISTORTION,         //
+        // DISTORTION,         // function not needed
         MAXLIFT,            // Maximise Lift
         MINDRAG,            // Minimise Drag
         MAXDOWNFORCE,       // Maximise Downforce
         MINLIFT,            // Minimise Lift
+        FUNCNOTSET,         // No setting selected
 
 	};
 
