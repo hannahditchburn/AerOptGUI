@@ -925,14 +925,12 @@ bool Optimisation::readAerOptSettings(QString filePath) {
                     if(ivalue == 1)
                         setObjFunc(Enum::ObjFunc::LIFTDRAG);
                     else if(ivalue == 2)
-                        setObjFunc(Enum::ObjFunc::DISTORTION);
-                    else if(ivalue == 3)
                         setObjFunc(Enum::ObjFunc::MAXLIFT);
-                    else if(ivalue == 4)
+                    else if(ivalue == 3)
                         setObjFunc(Enum::ObjFunc::MINDRAG);
-                    else if(ivalue == 5)
+                    else if(ivalue == 4)
                         setObjFunc(Enum::ObjFunc::MAXDOWNFORCE);
-                    else if(ivalue == 6)
+                    else if(ivalue == 5)
                         setObjFunc(Enum::ObjFunc::MINLIFT);
                     else
                         setObjFunc(Enum::ObjFunc::FUNCNOTSET);
