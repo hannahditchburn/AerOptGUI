@@ -521,9 +521,9 @@ bool Mesh::createBacFile(const std::string& meshBacFile)
                 outfile << "  2  1	 0" << std::endl;
                 outfile << "  point" << std::endl;
                 outfile << "LeadingEdge" << std::endl;
-                outfile << "    0.0  0.0   0.005  0.05  0.1" << std::endl;//<< leading edge point source
+                outfile << "    0.0  0.0   0.01  0.05  0.1" << std::endl;//<< leading edge point source
                 outfile << "TrailingEdge" << std::endl;
-                outfile << "    1.0  0.0   0.005  0.05  0.1" << std::endl;//<< trailing edge point source
+                outfile << "    1.0  0.0   0.01  0.05  0.1" << std::endl;//<< trailing edge point source
                 break;
             default :
                 outfile << "    0.0  0.0   0.15  0.4  0.6" << std::endl;//<< course
