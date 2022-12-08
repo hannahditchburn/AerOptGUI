@@ -455,6 +455,28 @@ bool Optimisation::createAerOptInFile(const QString& filePath)
         default:
             optMethodIndex = -1;
             break;
+
+        Enum::ObjFunc objFunc = objFunc();
+        uint objFuncIndex;
+        switch(objFunc) {
+        case Enum::ObjFunc::LIFTDRAG:
+            objFuncIndex = 1;
+            break;
+        case Enum::ObjFunc::MAXLIFT:
+            objFuncIndex = 2;
+            break;
+        case Enum::ObjFunc::MINDRAG:
+            objFuncIndex = 3;
+            break;
+        case Enum::ObjFunc::MAXDOWNFORCE:
+            objFuncIndex = 4;
+            break;
+        case Enum::ObjFunc::MINLIFT:
+            objFuncIndex = 5;
+            break;
+        default:
+            objFuncIndex = -1;
+            break;
         }
 
 
@@ -494,7 +516,7 @@ bool Optimisation::createAerOptInFile(const QString& filePath)
         outfile << "IV%Aconst = 0.01" << std::endl;
         outfile << "IV%POD = .false." << std::endl;
         outfile << "IV%NoDelBP = 4" << std::endl;
-        outfile << "IV%ObjectiveFunction = " << std::to_string( objFunc() ) << std::endl;
+        outfile << "IV%ObjectiveFunction = " << std::to_string( objFuncIndex ) << std::endl;
         //1 - Lift/Drag
         //2 - Distortion << no point in using this.
         //3 - max Lift
