@@ -455,8 +455,9 @@ bool Optimisation::createAerOptInFile(const QString& filePath)
         default:
             optMethodIndex = -1;
             break;
+        }
 
-        Enum::ObjFunc objFunc = objFunc();
+        Enum::ObjFunc objFunc = getObjFunc();
         uint objFuncIndex;
         switch(objFunc) {
         case Enum::ObjFunc::LIFTDRAG:
